@@ -2,7 +2,8 @@
  * Layout racine de CKlayser.
  *
  * Rôle : polices (next/font/google), feuille globale, état partagé et
- * squelette de l'application : sidebar fixe, header collant, contenu,
+ * squelette de l'application : header collant pleine largeur, sidebar fixe
+ * dessous, contenu,
  * navigation mobile, fenêtres de démonstration.
  *
  * Rendu dynamique : `await connection()` exclut la page du pré-rendu
@@ -19,6 +20,7 @@ import AuthDialog from '@/components/layout/AuthDialog';
 import DevStateToggle from '@/components/layout/DevStateToggle';
 import MobileNav from '@/components/layout/MobileNav';
 import Sidebar from '@/components/layout/Sidebar';
+import { SidebarProvider } from '@/components/layout/SidebarContext';
 import Topbar from '@/components/layout/Topbar';
 import Toast from '@/components/ui/Toast';
 import { AppStateProvider } from '@/lib/app-state';
@@ -81,9 +83,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <a href="#contenu" className="skip-link">
             Aller au contenu
           </a>
-          <Sidebar initialCollapsed={sidebarCollapsed} />
-          <div className={styles.column}>
+          <SidebarProvider initialCollapsed={sidebarCollapsed}>
+            {/* Header pleine largeur (bouton menu + logo), puis sidebar
+                dessous, comme YouTube. */}
             <Topbar />
+            <Sidebar />
+          </SidebarProvider>
+          <div className={styles.column}>
             <main id="contenu" tabIndex={-1} className={styles.main}>
               {children}
             </main>

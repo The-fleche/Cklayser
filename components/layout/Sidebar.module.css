@@ -5,8 +5,9 @@
    ========================================================================== */
 
 .sidebar {
+  /* Sous le header pleine largeur (bouton menu + logo), comme YouTube. */
   position: fixed;
-  inset: 0 auto 0 0;
+  inset: var(--header-height) auto 0 0;
   z-index: var(--z-sidebar);
   display: flex;
   flex-direction: column;
@@ -29,7 +30,7 @@
 .sidebar::after {
   content: '';
   position: fixed;
-  top: 0;
+  top: var(--header-height);
   bottom: 0;
   left: calc(var(--sidebar-width) - 1px);
   width: 2px;
@@ -51,44 +52,9 @@
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  padding-bottom: 11px;
+  padding: 14px 0 11px;
   container-type: inline-size;
   container-name: sidebar;
-}
-
-/* ----- Bouton menu + logo ------------------------------------------------ */
-.top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 18px 0 23px 12px;
-}
-
-.burger {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  color: var(--color-icon);
-  transition: background-color var(--duration-fast) var(--ease-out);
-}
-
-.burger:hover {
-  background-color: var(--color-nav-hover);
-}
-
-/* Logo : 176 px de large, ratio d'origine (2,04) conservé. */
-.logoLink {
-  display: block;
-  border-radius: 8px;
-}
-
-.logo {
-  display: block;
-  width: 176px;
-  height: auto; /* ratio d'origine conservé */
 }
 
 /* ----- Séparateur fin et lumineux (y = 391–392) ------------------------- */
@@ -111,19 +77,9 @@
 }
 
 /* ==========================================================================
-   Rail (76 px) : bouton menu au-dessus d'un petit logo, puis icônes.
+   Rail (76 px) : icônes + libellés courts, avatars des chaînes.
    ========================================================================== */
 @container sidebar (max-width: 120px) {
-  .top {
-    flex-direction: column;
-    gap: 10px;
-    margin: 12px 0 18px;
-  }
-
-  .logo {
-    width: 60px;
-  }
-
   .separator {
     width: 40px;
     margin: 22px auto 18px;
@@ -162,7 +118,7 @@
 /* Voile derrière le tiroir (clic : fermeture). */
 .scrim {
   position: fixed;
-  inset: 0;
+  inset: var(--header-height) 0 0;
   z-index: calc(var(--z-overlay) - 1);
   background-color: rgb(var(--color-overlay-rgb) / 0.55);
   cursor: default;

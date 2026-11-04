@@ -1,7 +1,6 @@
 /* ==========================================================================
-   Topbar — mesures capture : hauteur 90 px (filet à y = 89), recherche à
-   36 px du bord de la sidebar (x = 289), cloche centrée à x ≈ 1524,
-   avatar 1567 → 1618, chevron jusqu'à x = 1640 (marge droite 32 px).
+   Topbar — header pleine largeur (disposition YouTube) : bouton menu et
+   logo à gauche, recherche, puis cloche et compte à droite. Hauteur 90 px.
    ========================================================================== */
 
 .topbar {
@@ -12,13 +11,50 @@
   align-items: center;
   gap: 24px;
   height: var(--header-height);
-  /* 28 px à droite : la pointe du chevron tombe à x = 1640 (capture). */
-  padding: 0 28px 0 36px;
+  padding: 0 28px 0 16px;
   background-color: var(--color-bg-header);
   /* Filet inférieur très fin et légèrement lumineux, doublé d'une ombre
      sombre d'un pixel qui le détache du hero. */
   border-bottom: 1px solid var(--border-header);
   box-shadow: 0 1px 0 rgb(var(--color-overlay-rgb) / 0.55);
+}
+
+/* ----- Bouton menu + logo ------------------------------------------------ */
+.brand {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  /* La recherche démarre après la largeur de la sidebar complète. */
+  min-width: calc(252px - 16px);
+}
+
+.burger {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--color-icon);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.burger:hover {
+  background-color: var(--color-nav-hover);
+}
+
+.logoLink {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+/* Logo original à 140 px de large (ratio d'origine conservé). */
+.logo {
+  display: block;
+  width: 140px;
+  height: auto;
 }
 
 /* Sur la capture, la recherche occupe y = 24 → 70 et l'avatar y = 22 → 72 :
@@ -43,15 +79,22 @@
 
 /* (0,2,0) pour surcharger le display de la base d'IconButton. */
 .mobileOnly,
-.mobileLogo,
 .actions .mobileSearchButton {
   display: none;
 }
 
-/* Tablette : marges resserrées. */
+/* Tablette : marges resserrées, logo plus compact. */
 @media (max-width: 1279px) {
   .topbar {
-    padding: 0 24px;
+    padding: 0 24px 0 16px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .logo {
+    width: 120px;
   }
 }
 
@@ -73,16 +116,14 @@
     display: block;
   }
 
-  .mobileLogo {
-    display: block;
-    flex-shrink: 0;
-    border-radius: 6px;
+  /* Pas de bouton menu sur mobile (navigation en bas d'écran). */
+  .burger {
+    display: none;
   }
 
   /* Logo original à 96 px de large (ratio d'origine conservé). */
-  .mobileLogoImage {
+  .logo {
     width: 96px;
-    height: auto;
   }
 
   .actions .mobileSearchButton {

@@ -147,13 +147,15 @@ Aucun serveur : c'est une démonstration. Pour brancher une API, remplacer `save
 
 ## Sidebar rétractable
 
-Le bouton menu (☰), en haut de la sidebar, fonctionne comme sur YouTube :
+Disposition YouTube : le header occupe toute la largeur, avec le bouton menu (☰) et le logo à gauche, indépendants de la sidebar. La sidebar commence sous le header. L'état est partagé entre le header et la sidebar par `components/layout/SidebarContext.tsx`.
+
+Le bouton menu fonctionne ainsi :
 
 | Écran | Par défaut | Bouton menu |
 | --- | --- | --- |
 | Desktop (≥ 1280 px) | complète (252 px) | replie en rail de 76 px : icône au-dessus d'un libellé court, avatars des chaînes, icône Studio |
 | Tablette (768 → 1279 px) | rail | ouvre la sidebar complète par-dessus le contenu, avec un voile. Échap, un clic sur le voile ou un changement de page la referment |
-| Mobile | masquée | navigation inférieure |
+| Mobile | masquée | pas de bouton menu : logo réduit et navigation inférieure |
 
 - Sur desktop, le choix est gardé un an dans le cookie `cklayser-sidebar`. Le serveur le lit et pose `data-sidebar` sur `<html>`, donc il n'y a pas de décalage au chargement.
 - Les composants internes ne dépendent pas de la largeur d'écran : ils s'adaptent à la largeur réelle de la sidebar grâce à une requête de conteneur (`@container sidebar (max-width: 120px)`). Le même rail sert donc en mode replié et sur tablette.
