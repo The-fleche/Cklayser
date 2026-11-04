@@ -1,0 +1,108 @@
+/* ==========================================================================
+   IconButton — boutons ronds (flèches, « + », cloche)
+   Capture : flèches du hero = cercles de 40 px, fond brun très sombre
+   translucide ; « + » = cercle de 50 px à contour ivoire translucide.
+
+   Convention de cascade : la base d'un composant a une spécificité de
+   classe (0,1,0) ; un parent qui la surcharge via `className` utilise un
+   sélecteur de spécificité (0,2,0) (ex. `.railWrap .scrollButton`). Le
+   résultat ne dépend donc jamais de l'ordre des feuilles en production.
+   ========================================================================== */
+
+.iconButton {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--icon-button-size, 40px);
+  height: var(--icon-button-size, 40px);
+  border-radius: 50%;
+  color: var(--color-icon);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.glyph {
+  display: inline-flex;
+}
+
+/* Fond brun sombre translucide (flèches du carrousel) */
+.dark {
+  background-color: rgb(var(--color-veil-rgb) / 0.86);
+  box-shadow: var(--shadow-control);
+}
+
+.dark:hover {
+  background-color: rgb(var(--color-veil-rgb) / 0.97);
+  box-shadow: var(--shadow-control), 0 0 0 1px rgb(var(--color-gold-rgb) / 0.28);
+}
+
+/* Contour ivoire (bouton « + ») */
+.outline {
+  border: 1.5px solid var(--border-control);
+  background-color: rgb(var(--color-veil-rgb) / 0.4);
+}
+
+.outline:hover {
+  border-color: rgb(var(--color-gold-rgb) / 0.75);
+  background-color: rgb(var(--color-veil-rgb) / 0.6);
+  box-shadow: var(--glow-gold-soft);
+}
+
+.outline[aria-pressed='true'] {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+/* Sans fond (cloche du header) */
+.plain {
+  background-color: transparent;
+}
+
+.plain:hover {
+  background-color: var(--color-nav-hover);
+}
+
+/* Fond de surface (boutons de défilement des rangées) */
+.soft {
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--border-popover);
+  box-shadow: var(--shadow-control);
+}
+
+.soft:hover {
+  background-color: var(--color-surface-3);
+}
+
+.iconButton:active {
+  transform: scale(0.96);
+}
+
+.iconButton:disabled {
+  opacity: 0.4;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Pastille orange : jamais seule, son sens est porté par aria-label. */
+.indicator {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-indicator);
+  box-shadow: 0 0 0 2px var(--color-bg-header);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconButton:active {
+    transform: none;
+  }
+}

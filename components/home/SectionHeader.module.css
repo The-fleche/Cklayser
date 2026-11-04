@@ -1,0 +1,113 @@
+/* ==========================================================================
+   SectionHeader — mesures capture : titre à x = 282 (7 px de retrait par
+   rapport aux cartes), capitale de 21 px (≈ 30 px de corps) ; losange
+   centré à x ≈ 693 (≈ 34 px après le titre), aligné sur le milieu des
+   minuscules ; ligne dorée d'environ 130 px qui s'efface ; « Voir plus »
+   en 16 px aligné à droite (x = 1636).
+   ========================================================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding-left: var(--title-indent);
+}
+
+.title {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 1.1rem + 0.85vw, 1.9rem);
+  font-weight: 600;
+  line-height: 40px;
+  letter-spacing: -0.006em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ornement : losange + ligne, décalé de 2 px vers le bas pour s'aligner
+   sur le centre optique des minuscules (et non sur la boîte de ligne). */
+.ornament {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 34px;
+  transform: translateY(2px);
+}
+
+.line {
+  display: block;
+  width: 128px;
+  height: 1.5px;
+  margin-left: 1px;
+  border-radius: 1px;
+  /* Doré plein près du losange, puis fondu vers la transparence. */
+  background: linear-gradient(
+    90deg,
+    var(--color-keyframe-line) 0%,
+    rgb(var(--color-gold-rgb) / 0.62) 35%,
+    rgb(var(--color-gold-rgb) / 0.2) 72%,
+    rgb(var(--color-gold-rgb) / 0) 100%
+  );
+  box-shadow: 0 0 6px rgb(var(--color-gold-rgb) / 0.18);
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 16px;
+  color: var(--color-link);
+  font-size: var(--text-md);
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.more:hover {
+  color: var(--color-link-hover);
+}
+
+.chevron {
+  /* La pointe du chevron tombe à x = 1636 comme sur la capture. */
+  margin-right: -3px;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.more:hover .chevron {
+  transform: translateX(3px);
+}
+
+/* Mobile : titre plus court, retour à la ligne autorisé (jamais
+   d'ellipse), ornement réduit au seul losange. */
+@media (max-width: 767px) {
+  .header {
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 1.25rem; /* 20 px */
+    line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+    text-wrap: balance;
+  }
+
+  .ornament {
+    margin-left: 0;
+    transform: none;
+  }
+
+  .line {
+    display: none;
+  }
+
+  .more {
+    padding-left: 0;
+    font-size: 0.875rem;
+    gap: 2px;
+  }
+}

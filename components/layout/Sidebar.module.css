@@ -1,0 +1,125 @@
+/* ==========================================================================
+   Sidebar — mesures capture (1672 × 941) :
+   largeur 252 px ; fond --color-bg-sidebar ; bordure droite lumineuse : liseré sombre
+   (x = 250), cœur clair de 2 px (x = 251–252), liseré sombre (x = 253).
+   ========================================================================== */
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: var(--z-sidebar);
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  background-color: var(--color-bg-sidebar);
+  /* Défilement interne seulement si la fenêtre est très basse. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Délimitation lumineuse sidebar / contenu.
+   Un pseudo-élément fixe (et non un border) pour pouvoir combiner le cœur
+   clair, les deux liserés sombres et un halo doré très diffus. */
+.sidebar::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--sidebar-width) - 1px);
+  width: 2px;
+  background-color: var(--border-glow);
+  box-shadow:
+    -1px 0 0 var(--border-shadow),
+    1px 0 0 var(--border-shadow),
+    var(--glow-border);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Contenu au-dessus du décor (z-index 1 > décor 0). */
+.content {
+  position: relative;
+  z-index: var(--z-content);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-bottom: 11px;
+}
+
+/* ----- Logo : 208 px de large (ratio d'origine 2,04), centré sur la zone
+   occupée par le logo de la capture (x 30 → 210, y 27 → 102). ---------- */
+.logoLink {
+  display: block;
+  align-self: flex-start;
+  margin: 14px 0 23px 16px;
+  border-radius: 8px;
+}
+
+.logo {
+  display: block;
+  width: 208px;
+  height: auto; /* ratio d'origine conservé */
+}
+
+/* ----- Séparateur fin et lumineux (y = 391–392) ------------------------- */
+.separator {
+  height: 2px;
+  margin: 32px 24px 17px 22px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--color-gold-rgb) / 0.02) 0%,
+    var(--border-subtle) 8%,
+    var(--border-subtle) 92%,
+    rgb(var(--color-gold-rgb) / 0.02) 100%
+  );
+  box-shadow: 0 1px 0 rgb(var(--color-overlay-rgb) / 0.35);
+}
+
+.studio {
+  margin-top: 32px; /* carte Studio à y = 577 */
+}
+
+/* ==========================================================================
+   Tablette : 76 px, icônes seules. Le débordement doit rester visible pour
+   que les infobulles puissent sortir de la colonne.
+   ========================================================================== */
+@media (max-width: 1279px) {
+  .sidebar {
+    overflow: visible;
+  }
+
+  .content {
+    align-items: center;
+  }
+
+  .logoLink {
+    align-self: center;
+    margin: 18px 0 22px;
+  }
+
+  .logo {
+    width: 60px;
+  }
+
+  .separator {
+    width: 40px;
+    margin: 22px auto 18px;
+  }
+
+  .studio {
+    margin-top: 20px;
+  }
+}
+
+/* Mobile : la navigation passe en bas de l'écran (MobileNav). */
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+}

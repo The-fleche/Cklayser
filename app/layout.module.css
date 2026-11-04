@@ -1,0 +1,25 @@
+/* Colonne principale : décalée de la largeur de la sidebar fixe. */
+.column {
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin-left: var(--sidebar-width);
+}
+
+.main {
+  position: relative;
+  min-width: 0;
+  padding-bottom: 48px;
+}
+
+/* Le <main> reçoit le focus via le lien d'évitement : pas d'anneau sur un bloc entier. */
+.main:focus {
+  outline: none;
+}
+
+@media (max-width: 767px) {
+  .main {
+    /* Laisse la place à la navigation inférieure fixe. */
+    padding-bottom: calc(var(--mobile-nav-height) + 32px + env(safe-area-inset-bottom, 0px));
+  }
+}

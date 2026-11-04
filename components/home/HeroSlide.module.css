@@ -1,0 +1,233 @@
+/* ==========================================================================
+   HeroSlide — mesures capture (hero de 1419 × 438 px, y = 90 → 528) :
+   badge 117 × 33 px à 55 px du bord gauche et 56 px du haut ;
+   titre Fraunces italique, capitale de 52 px (≈ 76 px de corps),
+   interligne 73 px ; synopsis sur deux lignes ; bouton 228 × 48 px puis
+   « + » de 50 px à 19 px ; voile : fond plein sur ~250 px puis fondu
+   jusqu'à ~600 px.
+   ========================================================================== */
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  /* La visibilité bascule après le fondu pour que la diapositive sortante
+     reste visible pendant le fondu enchaîné. */
+  transition:
+    opacity var(--duration-slow) var(--ease-in-out),
+    visibility 0s linear var(--duration-slow);
+}
+
+.active {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--duration-slow) var(--ease-in-out),
+    visibility 0s;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+  transform: scale(1.03);
+  transition: transform 1.4s var(--ease-out);
+}
+
+/* Cadre du visuel (illustration ou vidéo). */
+.frame {
+  position: absolute;
+  inset: 0;
+}
+
+/* Vidéo : cadre à droite de la colonne de texte. Son bord gauche se fond
+   dans le fond du hero ; le voile garantit toujours le contraste du texte. */
+.frameVideo {
+  left: clamp(280px, 30%, 520px);
+  /* Masque : seule l’opacité compte, la couleur est indifférente. */
+  mask-image: linear-gradient(90deg, transparent 0, black 22%);
+}
+
+/* Vidéo de fond : posée sur l'affiche, révélée en fondu une fois lancée. */
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+
+.videoShown {
+  opacity: 1;
+}
+
+/* Léger recul de l'image à l'apparition (désactivé en mouvement réduit). */
+.active .image {
+  transform: scale(1);
+}
+
+/* Voile sombre progressif à gauche pour la lisibilité du texte. Relevé
+   capture : fond plein sur ~250 px, image pleinement visible vers ~600 px.
+   Les arrêts sont en pixels (et non en %) : ils suivent la colonne de
+   texte, de largeur fixe, quelle que soit la largeur du hero — le contraste
+   du synopsis reste ainsi garanti quelle que soit l'illustration.
+   Un second dégradé assombrit légèrement le bas pour les indicateurs. */
+.veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(var(--color-bg-rgb) / 1) 0,
+      rgb(var(--color-bg-rgb) / 1) 250px,
+      rgb(var(--color-bg-rgb) / 0.92) 330px,
+      rgb(var(--color-bg-rgb) / 0.8) 430px,
+      rgb(var(--color-bg-rgb) / 0.55) 530px,
+      rgb(var(--color-bg-rgb) / 0.22) 640px,
+      rgb(var(--color-bg-rgb) / 0) 760px
+    ),
+    linear-gradient(0deg, rgb(var(--color-bg-rgb) / 0.55) 0%, rgb(var(--color-bg-rgb) / 0) 16%);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding: clamp(32px, 3.35vw, 64px) 24px 0 var(--hero-pad-left);
+}
+
+.title {
+  margin-top: clamp(16px, 1.5vw, 28px);
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(44px, 4.55vw, 88px);
+  /* Axe optique fixé à 30 : c'est la coupe qui reproduit les largeurs de
+     la capture (« Les Échos » 331 px, « d'Aelith » 272 px à 76 px). */
+  font-variation-settings: 'opsz' 30;
+  line-height: 0.96;
+  letter-spacing: 0;
+  /* Coupure après « Échos », comme sur la capture (7em ≈ 532 px à 76 px). */
+  max-width: 7em;
+  text-wrap: balance;
+  text-shadow: 0 2px 18px rgb(var(--color-bg-rgb) / 0.55);
+}
+
+.synopsis {
+  margin-top: clamp(10px, 0.75vw, 16px);
+  /* ≈ 412 px : « où » passe à la ligne, comme sur la capture. */
+  max-width: 25em;
+  color: var(--color-text-soft);
+  font-size: 1.03125rem; /* 16,5 px : ligne 1 = 406 px, comme la capture */
+  font-weight: 500;
+  line-height: 24px;
+  text-shadow: 0 1px 10px rgb(var(--color-bg-rgb) / 0.7);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  margin-top: clamp(20px, 1.85vw, 36px);
+}
+
+.watch {
+  min-width: 228px;
+}
+
+/* ==========================================================================
+   Mobile : composition verticale — image 4:5 aux coins arrondis, texte
+   sous l'image (et non plus superposé).
+   ========================================================================== */
+@media (max-width: 767px) {
+  .slide {
+    position: absolute;
+    inset: 0 0 auto;
+  }
+
+  .active {
+    position: relative;
+  }
+
+  .media {
+    position: relative;
+    inset: auto;
+    aspect-ratio: 4 / 5;
+    max-height: 62vh;
+    width: 100%;
+    border-radius: var(--radius-hero-mobile);
+    box-shadow: var(--shadow-card);
+  }
+
+  .frameVideo {
+    left: 0;
+    mask-image: none;
+  }
+
+  .veil {
+    background: linear-gradient(0deg, rgb(var(--color-bg-rgb) / 0.75) 0%, rgb(var(--color-bg-rgb) / 0) 30%);
+  }
+
+  /* Contenu « statique » : le badge se positionne alors par rapport à la
+     diapositive, c'est-à-dire sur l'image, en haut à gauche. */
+  .content {
+    position: static;
+    height: auto;
+    padding: 0;
+  }
+
+  .badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 2;
+  }
+
+  .title {
+    margin-top: 18px;
+    font-size: clamp(36px, 10.5vw, 46px);
+    line-height: 1;
+    max-width: none;
+  }
+
+  .synopsis {
+    margin-top: 10px;
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  .actions {
+    width: 100%;
+    margin-top: 18px;
+    gap: 12px;
+  }
+
+  .watch {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image,
+  .active .image {
+    transform: none;
+    transition: none;
+  }
+
+  .video {
+    transition: none;
+  }
+}

@@ -1,0 +1,130 @@
+/* ==========================================================================
+   Button — pilules primaires / secondaires
+   Mesures de la capture : « Regarder maintenant » = 228 × 48 px,
+   icône Play à 32 px du bord gauche, 15 px entre icône et libellé.
+   Base en spécificité de classe ; un parent surcharge avec (0,2,0).
+   ========================================================================== */
+
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.label {
+  display: inline-block;
+}
+
+/* ----- Tailles ----------------------------------------------------------- */
+.md {
+  height: 48px;
+  padding: 0 26px 0 27px;
+  gap: 11px;
+  font-size: 0.875rem; /* 14 px : bouton de 228 px comme sur la capture */
+}
+
+.sm {
+  height: 40px;
+  padding: 0 18px;
+  gap: 8px;
+  font-size: 0.875rem; /* 14 px */
+}
+
+.lg {
+  height: 52px;
+  padding: 0 26px;
+  font-size: 1rem;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* ----- Primaire : terracotta (--color-terracotta) + blanc (contraste 4,86:1) ---------- */
+.primary {
+  background-color: var(--color-terracotta);
+  color: var(--color-text-on-accent);
+  /* Léger relief : lumière en haut, ombre portée chaude. */
+  box-shadow:
+    inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.18),
+    var(--shadow-control);
+}
+
+.primary:hover {
+  /* Même fond (contraste préservé) : seul un halo doré discret apparaît. */
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.22),
+    var(--glow-gold-soft);
+}
+
+.primary:active {
+  transform: translateY(0);
+  background-color: var(--color-terracotta-pressed);
+  box-shadow: inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.12);
+}
+
+/* ----- Secondaire : fond transparent, contour clair ---------------------- */
+.secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border-color: var(--border-control);
+}
+
+.secondary:hover {
+  background-color: rgb(var(--color-gold-rgb) / 0.07);
+  border-color: rgb(var(--color-gold-rgb) / 0.55);
+}
+
+.secondary:active {
+  background-color: rgb(var(--color-gold-rgb) / 0.12);
+}
+
+/* ----- Discret ----------------------------------------------------------- */
+.ghost {
+  background-color: transparent;
+  color: var(--color-text-body);
+}
+
+.ghost:hover {
+  background-color: var(--color-nav-hover);
+  color: var(--color-text);
+}
+
+/* ----- Désactivé : identifiable par la forme (contour pointillé), pas
+   seulement par la couleur ------------------------------------------------ */
+.button:disabled,
+.button[aria-disabled='true'] {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px dashed var(--border-control);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button:hover {
+    transform: none;
+  }
+}

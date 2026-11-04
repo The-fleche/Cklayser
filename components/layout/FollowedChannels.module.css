@@ -1,0 +1,175 @@
+/* ==========================================================================
+   FollowedChannels — mesures capture :
+   surtitre à x = 27, y ≈ 413 ; « Voir tout › » se termine à x = 230 ;
+   avatars de 40 px à x = 26, centrés à y = 467 puis 525 (pas de 58 px) ;
+   nom à x = 83.
+   ========================================================================== */
+
+.channels {
+  padding: 0 16px 0 26px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 5px 18px 1px; /* « Voir tout › » se termine à x = 231 (capture) */
+}
+
+/* Surtitre technique en capitales : JetBrains Mono, 12 px (plancher). */
+.title {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--color-text-label);
+  white-space: nowrap;
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-link);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.seeAll:hover {
+  color: var(--color-link-hover);
+}
+
+.chevron {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.seeAll:hover .chevron {
+  transform: translateX(2px);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px; /* 40 px + 18 px = pas de 58 px */
+  /* La liste gagne 8 px à droite : « 312k abonnés • 2D Cut-out » tient
+     sans ellipse dans la largeur de la sidebar. */
+  margin-right: -8px;
+}
+
+.channel {
+  display: flex;
+  align-items: center;
+  gap: 17px; /* avatar (26 → 66) → nom à x = 83 */
+  border-radius: 12px;
+  /* Zone de clic élargie sans décaler la mise en page. */
+  margin: -4px -6px;
+  padding: 4px 6px;
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+
+.channel:hover {
+  background-color: var(--color-nav-hover);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  color: var(--color-text);
+  font-size: var(--text-sm); /* 13 px */
+  font-weight: 700;
+  line-height: 19px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chiffres tabulaires pour les compteurs. */
+.count {
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar {
+  box-shadow: 0 0 0 1px rgb(var(--color-gold-rgb) / 0.12);
+}
+
+/* ==========================================================================
+   Tablette : avatars seuls, nom en infobulle
+   ========================================================================== */
+@media (max-width: 1279px) {
+  .channels {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header {
+    margin: 0 0 14px;
+  }
+
+  /* Le titre et « Voir tout » restent lisibles par les lecteurs d'écran. */
+  .title,
+  .seeAll {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .list {
+    align-items: center;
+    gap: 14px;
+    margin-right: 0;
+  }
+
+  .channel {
+    position: relative;
+    margin: 0;
+    padding: 4px;
+    border-radius: 50%;
+  }
+
+  .text {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background-color: var(--color-surface-2);
+    border: 1px solid var(--border-popover);
+    box-shadow: var(--shadow-popover);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-4px, -50%);
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .channel:hover .text,
+  .channel:focus-visible .text {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+}

@@ -1,0 +1,76 @@
+/* ==========================================================================
+   Badge — mesures capture : « Exclusif » 84 × 26 px, « 3D interactif »
+   102 × 27 px, posés à 8 px / 9 px du coin supérieur gauche de la carte.
+   « En avance » (hero) : 117 × 33 px, horloge de 20 px.
+   ========================================================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.005em;
+}
+
+.sm {
+  height: 26px;
+  padding: 0 11px;
+  font-size: 0.8125rem; /* 13 px */
+}
+
+/* Le badge avec icône garde une marge gauche plus courte (icône = optique). */
+.sm:has(.icon) {
+  padding-left: 6px;
+  padding-right: 9px;
+}
+
+.md {
+  height: 33px;
+  padding: 0 14px 0 13px;
+  gap: 7px;
+  font-size: var(--text-sm); /* 13 px */
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+/* En avance : terracotta + blanc (4,86:1) — couleur de la capture (orange plus
+   clair, 4,38:1 seulement) corrigée pour le contraste. */
+.early {
+  background-color: var(--badge-early-bg);
+  color: var(--badge-early-fg);
+  box-shadow: 0 4px 14px -6px rgb(var(--color-veil-rgb) / 0.9);
+}
+
+/* Exclusif : doré clair, texte brun très sombre. L'icône est un disque
+   sombre plein dont le triangle reprend la couleur du badge. */
+.exclusive {
+  background-color: var(--badge-exclusive-bg);
+  color: var(--badge-exclusive-fg);
+}
+
+.exclusiveIcon circle {
+  fill: currentColor;
+}
+
+.exclusiveIcon path {
+  fill: var(--badge-exclusive-bg);
+  stroke: var(--badge-exclusive-bg);
+}
+
+/* 3D interactif : vert profond, texte vert clair (8,4:1). */
+.interactive3d {
+  background-color: var(--badge-3d-bg);
+  color: var(--badge-3d-fg);
+}
+
+/* Nouveau : brun sombre, texte ivoire (11:1). */
+.new {
+  background-color: var(--badge-new-bg);
+  color: var(--badge-new-fg);
+}

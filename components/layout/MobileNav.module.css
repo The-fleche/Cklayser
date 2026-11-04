@@ -1,0 +1,94 @@
+.mobileNav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobileNav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-mobile-nav);
+    display: block;
+    /* Respect de la zone sûre des écrans à encoche. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background-color: var(--color-bg-sidebar);
+    /* Même délimitation lumineuse que la sidebar, à l'horizontale. */
+    border-top: 1px solid var(--border-glow);
+    box-shadow: 0 -1px 0 var(--border-shadow), 0 -12px 28px -10px rgb(var(--color-overlay-rgb) / 0.8);
+  }
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: var(--mobile-nav-height);
+}
+
+.entry {
+  display: flex;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--color-text-soft);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.item:focus-visible {
+  outline-offset: -4px;
+  border-radius: 12px;
+}
+
+.iconWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Entrée active : couleur argile + trait supérieur (indice non chromatique). */
+.active {
+  color: var(--color-link);
+}
+
+.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 28%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background-color: var(--color-terracotta);
+}
+
+.active .icon {
+  fill: currentColor;
+}
+
+/* Porte de la maison : découpe sur le fond de la barre. */
+.active .iconHouse path:last-child {
+  fill: var(--color-bg-sidebar);
+}
+
+.dot {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-indicator);
+  box-shadow: 0 0 0 2px var(--color-bg-sidebar);
+}
+
+.label {
+  line-height: 1;
+}

@@ -1,0 +1,147 @@
+/* ==========================================================================
+   Hero — mesures capture : bord à bord de x = 253 à 1672 et de y = 90 à
+   528 (1419 × 438 px), coins francs sur desktop. Flèches de 40 px :
+   centres à x = 1564 et 1615, y = 483 (marges 38 px à droite, 26 px en
+   bas, 12 px entre elles). Indicateurs de 12 px au pas de 29 px, centrés
+   sur x ≈ 930, à 13 px du bas.
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  /* 26,2 vw = 438 px à 1672 px de large ; bornes pour garder le texte lisible. */
+  height: clamp(420px, 26.2vw, 600px);
+  overflow: hidden;
+  background-color: var(--color-bg-header);
+  isolation: isolate;
+}
+
+.viewport {
+  position: absolute;
+  inset: 0;
+}
+
+/* Zone des indicateurs : centrée entre la colonne de texte (55 px) et la
+   zone des flèches (120 px à droite), ce qui place le groupe à x ≈ 930
+   comme sur la capture. */
+.dotsZone {
+  position: absolute;
+  z-index: 3;
+  left: var(--hero-pad-left);
+  right: 120px;
+  bottom: 7px; /* point visible de 12 px dont le bas est à 13 px du bord */
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dots {
+  display: flex;
+  gap: 5px;
+  pointer-events: auto;
+}
+
+/* Cible tactile de 24 px pour un point visible de 12 px. */
+.dot {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.dot::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background-color: rgb(var(--color-text-rgb) / 0.42);
+  box-shadow: 0 0 0 1px rgb(var(--color-bg-rgb) / 0.25);
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.dot:hover::before {
+  background-color: rgb(var(--color-text-rgb) / 0.7);
+}
+
+/* Actif : terracotta + légèrement plus grand (indice non chromatique). */
+.dot[aria-current='true']::before {
+  background-color: var(--color-terracotta);
+  transform: scale(1.12);
+}
+
+.dot:focus-visible {
+  outline-offset: 0;
+}
+
+.controls {
+  position: absolute;
+  z-index: 3;
+  right: 38px;
+  bottom: 26px;
+  display: flex;
+  gap: 11px;
+}
+
+/* Bouton pause : hors écran tant qu'il n'a pas le focus clavier, sauf sur
+   une diapositive vidéo où il reste affiché (contenu animé de plus de 5 s). */
+.pauseHidden:not(:focus-visible) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Tablette
+   ========================================================================== */
+@media (max-width: 1279px) {
+  .controls {
+    right: 24px;
+    bottom: 22px;
+  }
+
+  .dotsZone {
+    right: 110px;
+    bottom: 10px;
+  }
+}
+
+/* ==========================================================================
+   Mobile : hero vertical, image 4:5 puis texte. Les flèches laissent la
+   place au balayage tactile ; les indicateurs restent sur l'image.
+   ========================================================================== */
+@media (max-width: 767px) {
+  .hero {
+    height: auto;
+    margin: 16px var(--content-pad-right) 0 var(--content-pad-left);
+    overflow: visible;
+    background: none;
+  }
+
+  .viewport {
+    position: relative;
+    inset: auto;
+  }
+
+  /* Les flèches disparaissent ; seul le bouton pause reste, en haut à
+     droite de l'image (le badge occupe le coin gauche). */
+  .controls {
+    top: 14px;
+    right: 14px;
+    bottom: auto;
+  }
+
+  .controls .arrow {
+    display: none;
+  }
+
+  .dotsZone {
+    left: 0;
+    right: 0;
+    top: calc(min(62vh, (100vw - 32px) * 1.25) - 38px);
+    bottom: auto;
+  }
+}

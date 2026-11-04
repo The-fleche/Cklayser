@@ -1,0 +1,210 @@
+/* ==========================================================================
+   SearchBar — mesures capture : pilule de 766 × 46 px à x = 289, y = 24 ;
+   fond --color-surface ; loupe centrée à x = 321 ; placeholder à x = 362.
+   ========================================================================== */
+
+.search {
+  position: relative;
+  flex: 0 1 766px;
+  min-width: 0;
+}
+
+.field {
+  position: relative;
+  height: 46px;
+}
+
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 46px 0 73px; /* 289 + 73 = 362 : début du texte relevé */
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.875rem; /* 14 px : placeholder de 229 px comme la capture */
+  font-weight: 400;
+  letter-spacing: 0;
+  /* Très léger relief intérieur, comme sur la capture. */
+  box-shadow: inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.03);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input::placeholder {
+  /* Couleur corrigée pour le contraste : 4,9:1 (capture : 3,7:1). */
+  color: var(--color-text-placeholder);
+  opacity: 1;
+}
+
+.input:hover {
+  border-color: rgb(var(--color-gold-rgb) / 0.12);
+}
+
+.input:focus {
+  background-color: var(--color-surface-2);
+}
+
+/* L'anneau de focus doré épouse la forme de pilule. */
+.input:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 21px; /* centre à 32 px du bord : x = 321 */
+  transform: translateY(-50%);
+  color: var(--color-icon);
+  pointer-events: none;
+}
+
+.clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-soft);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.clear:hover {
+  background-color: var(--color-surface-3);
+  color: var(--color-text);
+}
+
+/* ----- Panneau de résultats --------------------------------------------- */
+.panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: var(--z-popover);
+  max-height: min(460px, 70vh);
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: var(--radius-panel);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--border-popover);
+  box-shadow: var(--shadow-popover);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.listbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.groupLabel {
+  padding: 10px 10px 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-label);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+/* Option active (clavier ou survol) : fond éclairci + liseré doré à gauche,
+   pour ne pas reposer uniquement sur la couleur. */
+.optionActive {
+  background-color: var(--color-surface-3);
+  box-shadow: inset 3px 0 0 var(--color-gold);
+}
+
+.thumb,
+.thumbRound {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.thumb {
+  width: 64px;
+  aspect-ratio: var(--card-ratio);
+  border-radius: 8px;
+}
+
+.thumbRound {
+  width: 40px;
+  height: 40px;
+  margin: 0 12px;
+  border-radius: 50%;
+}
+
+.thumbImage {
+  object-fit: cover;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.optionTitle {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.optionMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.empty {
+  padding: 14px 12px;
+  color: var(--color-text-soft);
+  font-size: 0.875rem;
+}
+
+/* ----- Variante plein écran (mobile) ------------------------------------ */
+.overlayVariant {
+  flex: none;
+  width: 100%;
+}
+
+.overlayVariant .panel {
+  position: static;
+  max-height: none;
+  margin-top: 16px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}

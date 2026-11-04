@@ -1,0 +1,31 @@
+.avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--avatar-size, 40px);
+  height: var(--avatar-size, 40px);
+  border-radius: 50%;
+  overflow: hidden;
+  /* Fond argile pour les avatars à initiales. */
+  background: radial-gradient(120% 120% at 30% 20%, var(--color-clay) 0%, var(--color-terracotta) 55%, var(--color-nav-active) 100%);
+}
+
+/* Anneau clair fin, relevé sur l'avatar du header (≈ 1,5 px). */
+.ring {
+  box-shadow: 0 0 0 1.5px var(--border-avatar), 0 4px 12px -4px rgb(var(--color-overlay-rgb) / 0.9);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: calc(var(--avatar-size, 40px) * 0.36);
+  letter-spacing: 0.02em;
+  color: var(--color-text-on-accent);
+}

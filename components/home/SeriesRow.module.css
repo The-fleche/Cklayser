@@ -1,0 +1,122 @@
+/* ==========================================================================
+   SeriesRow — mesures capture :
+   - 1re section : titre à 24 px sous le hero, cartes 11 px sous la ligne
+     de titre (y = 603), 4 × ~326 px avec 20 px de gouttière, de x = 275
+     à x = 1640 ;
+   - sections suivantes : 43 px entre le bas des cartes et la ligne de titre.
+   ========================================================================== */
+
+.section {
+  padding: 0 var(--content-pad-right) 0 var(--content-pad-left);
+}
+
+.section + .section {
+  margin-top: 43px;
+}
+
+.railWrap {
+  position: relative;
+  margin-top: 11px;
+}
+
+/* La rangée défile horizontalement. Ses marges négatives (compensées par
+   un padding égal) laissent de la place à l'élévation de 4 px, aux ombres
+   et à l'anneau de focus des cartes, qui seraient sinon rognés par le
+   conteneur de défilement. */
+.rail {
+  --rail-bleed-x: 8px;
+  --rail-bleed-top: 10px;
+  --rail-bleed-bottom: 30px;
+
+  display: grid;
+  grid-auto-flow: column;
+  /* Les pourcentages d'une grille se rapportent à sa boîte de contenu
+     (padding exclu) : 100 % = largeur utile de la section. */
+  grid-auto-columns: calc((100% - (var(--cards-per-view) - 1) * var(--card-gap)) / var(--cards-per-view));
+  gap: var(--card-gap);
+  margin: calc(-1 * var(--rail-bleed-top)) calc(-1 * var(--rail-bleed-x)) calc(-1 * var(--rail-bleed-bottom));
+  padding: var(--rail-bleed-top) var(--rail-bleed-x) var(--rail-bleed-bottom);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--rail-bleed-x);
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rail > li {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+/* ----- Variante univers : cartes de 277 px, gouttière de 17 px. La
+   rangée n'a pas de débordement : son bord arrondi rogne la dernière carte
+   comme sur la capture (5e carte coupée à x = 1640, coin arrondi). ------ */
+.universe .rail {
+  --rail-bleed-x: 0px;
+  --rail-bleed-top: 0px;
+  --rail-bleed-bottom: 0px;
+
+  grid-auto-columns: var(--universe-card-width);
+  gap: var(--universe-gap);
+  border-radius: var(--radius-card);
+}
+
+/* ----- Boutons de défilement : visibles au survol de la rangée ou au focus.
+   Sélecteurs en (0,2,0) pour surcharger la base d'IconButton (position). */
+.railWrap .scrollButton {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  margin-top: -20px;
+  opacity: 0;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.railWrap .scrollButton[hidden] {
+  display: none;
+}
+
+.railWrap:hover .scrollButton,
+.railWrap .scrollButton:focus-visible {
+  opacity: 1;
+}
+
+.railWrap .scrollPrevious {
+  left: -14px;
+}
+
+.railWrap .scrollNext {
+  right: -14px;
+}
+
+/* Écrans tactiles : pas de survol, on fait défiler au doigt. */
+@media (hover: none) {
+  .railWrap .scrollButton {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .section + .section {
+    margin-top: 32px;
+  }
+
+  /* Défilement bord à bord : les cartes passent sous les marges de la page. */
+  .rail {
+    margin-left: calc(-1 * var(--content-pad-left));
+    margin-right: calc(-1 * var(--content-pad-right));
+    padding-left: var(--content-pad-left);
+    padding-right: var(--content-pad-right);
+    scroll-padding-inline: var(--content-pad-left);
+  }
+
+  .universe .rail {
+    border-radius: 0;
+  }
+}

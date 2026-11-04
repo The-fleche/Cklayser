@@ -1,0 +1,84 @@
+/* ==========================================================================
+   SidebarDecor
+   Le conteneur occupe l'espace libre restant sous la carte Studio
+   (flex: 1 1 0). Il est déclaré « container-type: size » pour que le SVG
+   puisse se dimensionner en fonction de la hauteur disponible (unité cqh) :
+   - grand écran : 290 px de haut, comme sur la capture ;
+   - écran plus court : le décor rétrécit au lieu de passer sous le texte ;
+   - tablette (76 px) : le décor garde sa taille et est simplement rogné.
+   ========================================================================== */
+
+.decor {
+  position: relative;
+  z-index: var(--z-decor);
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 290px;
+  margin-top: auto;
+  overflow: hidden;
+  pointer-events: none;
+  container-type: size;
+}
+
+.svg {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: min(290px, 100cqh);
+  width: auto;
+  max-width: none; /* taille fixe : le décor est rogné (et non réduit) en tablette */
+  aspect-ratio: 252 / 290;
+}
+
+/* Couleurs des dégradés (via classes : aucune valeur HEX dans le SVG). */
+.stopClay { stop-color: var(--color-decor-clay); }
+.stopClay2 { stop-color: var(--color-decor-clay-2); }
+.stopBrick { stop-color: var(--color-decor-brick); }
+.stopBrick2 { stop-color: var(--color-decor-brick-2); }
+.stopDeep { stop-color: var(--color-decor-deep); }
+.stopDeep2 { stop-color: var(--color-decor-deep-2); }
+
+/* Arcs : filets dorés de 1 px, légèrement transparents. */
+.arc {
+  fill: none;
+  stroke: var(--color-decor-arc);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+.vein {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 0.8;
+  opacity: 0.12;
+}
+
+/* Le grain éclaircit/assombrit très légèrement la surface. */
+.grain {
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+}
+
+.mottle {
+  mix-blend-mode: multiply;
+  opacity: 0.22;
+}
+
+/* Halo doré des keyframes. */
+.keyframe {
+  filter: drop-shadow(0 0 2.5px rgb(var(--color-gold-rgb) / 0.75));
+}
+
+.keyframeRing {
+  fill: var(--color-keyframe);
+}
+
+.keyframeCore {
+  fill: var(--color-ochre);
+  opacity: 0.85;
+}
+
+.keyframeSolid {
+  fill: var(--color-keyframe);
+}

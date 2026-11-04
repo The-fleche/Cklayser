@@ -1,0 +1,129 @@
+.page {
+  position: relative;
+  min-height: calc(100vh - var(--header-height) - 48px);
+  padding: 48px var(--content-pad-right) 48px calc(var(--content-pad-left) + var(--title-indent));
+  overflow: hidden;
+}
+
+.media {
+  position: relative;
+  max-width: 1080px;
+  aspect-ratio: 32 / 9;
+  margin-bottom: 36px;
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.media img {
+  object-fit: cover;
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: 14px;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.75rem);
+  font-style: italic;
+  font-weight: 600;
+  font-variation-settings: 'opsz' 30;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.description {
+  margin-top: 18px;
+  color: var(--color-text-soft);
+  font-size: var(--text-lg);
+  line-height: 1.6;
+}
+
+.extra {
+  margin-top: 24px;
+}
+
+.highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.highlight {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--color-text-body);
+  font-size: var(--text-base);
+}
+
+/* (0,2,0) : surcharge la rotation de base de KeyframeDiamond. */
+.highlight .bullet {
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.signature {
+  margin-top: 40px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+}
+
+.ornament {
+  position: absolute;
+  right: -40px;
+  bottom: 24px;
+  width: min(520px, 60vw);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.arc {
+  fill: none;
+  stroke: var(--color-decor-arc);
+  stroke-width: 1.2;
+}
+
+.key {
+  fill: var(--color-keyframe);
+  filter: drop-shadow(0 0 3px rgb(var(--color-gold-rgb) / 0.7));
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding-top: 28px;
+  }
+
+  .media {
+    aspect-ratio: 16 / 10;
+  }
+
+  .ornament {
+    display: none;
+  }
+}

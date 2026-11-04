@@ -1,0 +1,23 @@
+/* Rangées sous le hero : la ligne de titre de la 1re section commence
+   24 px sous le hero (y = 552 sur la capture). Un halo chaud très diffus
+   prolonge la lumière du visuel sous le hero (relevé : fond légèrement
+   plus clair sous les zones lumineuses de l'image). */
+.sections {
+  position: relative;
+  padding-top: 24px;
+}
+
+.sections::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 160px;
+  background: radial-gradient(60% 100% at 72% 0%, rgb(var(--color-clay-rgb) / 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .sections {
+    padding-top: 28px;
+  }
+}

@@ -1,0 +1,100 @@
+/* ==========================================================================
+   Topbar — mesures capture : hauteur 90 px (filet à y = 89), recherche à
+   36 px du bord de la sidebar (x = 289), cloche centrée à x ≈ 1524,
+   avatar 1567 → 1618, chevron jusqu'à x = 1640 (marge droite 32 px).
+   ========================================================================== */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: var(--header-height);
+  /* 28 px à droite : la pointe du chevron tombe à x = 1640 (capture). */
+  padding: 0 28px 0 36px;
+  background-color: var(--color-bg-header);
+  /* Filet inférieur très fin et légèrement lumineux, doublé d'une ombre
+     sombre d'un pixel qui le détache du hero. */
+  border-bottom: 1px solid var(--border-header);
+  box-shadow: 0 1px 0 rgb(var(--color-overlay-rgb) / 0.55);
+}
+
+/* Sur la capture, la recherche occupe y = 24 → 70 et l'avatar y = 22 → 72 :
+   leur centre (y = 47) est 2,5 px sous le milieu de la zone utile (89 px).
+   Une marge haute de 5 px décale l'élément centré de 2,5 px. */
+.search {
+  margin-top: 5px;
+}
+
+.actions {
+  display: flex;
+  flex-shrink: 0; /* c'est la recherche qui rétrécit, jamais les actions */
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+  margin-top: 5px;
+}
+
+.desktopOnly {
+  display: contents;
+}
+
+/* (0,2,0) pour surcharger le display de la base d'IconButton. */
+.mobileOnly,
+.mobileLogo,
+.actions .mobileSearchButton {
+  display: none;
+}
+
+/* Tablette : marges resserrées. */
+@media (max-width: 1279px) {
+  .topbar {
+    padding: 0 24px;
+  }
+}
+
+/* ==========================================================================
+   Mobile : header compact (64 px) — logo, recherche, avatar / connexion
+   ========================================================================== */
+@media (max-width: 767px) {
+  .topbar {
+    gap: 8px;
+    padding: 0 12px 0 16px;
+  }
+
+  .search,
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: block;
+  }
+
+  .mobileLogo {
+    display: block;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+
+  /* Logo original à 96 px de large (ratio d'origine conservé). */
+  .mobileLogoImage {
+    width: 96px;
+    height: auto;
+  }
+
+  .actions .mobileSearchButton {
+    display: inline-grid;
+  }
+
+  .search,
+  .actions {
+    margin-top: 0;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+}

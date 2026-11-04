@@ -1,0 +1,129 @@
+/* ==========================================================================
+   NotificationsPanel — cloche relevée à x ≈ 1511 → 1537 (centre 1524),
+   pastille orange de 10 px en haut à droite.
+   ========================================================================== */
+
+.wrapper {
+  position: relative;
+}
+
+.bell {
+  color: var(--color-icon);
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: -8px;
+  z-index: var(--z-popover);
+  width: min(380px, calc(100vw - 32px));
+  padding: 8px;
+  border-radius: var(--radius-panel);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--border-popover);
+  box-shadow: var(--shadow-popover);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 6px;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.markAll {
+  color: var(--color-link);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.markAll:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+.allRead {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 10px 28px 10px 10px;
+  border-radius: 12px;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.item:hover {
+  background-color: var(--color-surface-3);
+}
+
+.iconWrap {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  color: var(--color-gold);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemTitle {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.body {
+  color: var(--color-text-soft);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.time {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+/* Non lue : pastille + titre en gras (le texte accessible le précise aussi). */
+.dot {
+  position: absolute;
+  top: 16px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-indicator);
+}

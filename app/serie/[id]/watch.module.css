@@ -1,0 +1,97 @@
+/* ==========================================================================
+   Page de visionnage : lecteur pleine largeur (max. 1180 px) puis
+   informations de l'épisode.
+   ========================================================================== */
+
+.page {
+  max-width: calc(1180px + var(--content-pad-left) + var(--content-pad-right));
+  padding: 28px var(--content-pad-right) 56px var(--content-pad-left);
+}
+
+.info {
+  max-width: 760px;
+  margin-top: 28px;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: 10px;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 1.5rem + 1.8vw, 3rem);
+  font-style: italic;
+  font-weight: 600;
+  font-variation-settings: 'opsz' 30;
+  line-height: 1.05;
+}
+
+.episodeTitle {
+  display: block;
+  margin-top: 6px;
+  color: var(--color-text-soft);
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 16px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.channel {
+  color: var(--color-link);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.channel:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+.synopsis {
+  margin-top: 16px;
+  color: var(--color-text-body);
+  font-size: var(--text-md);
+  line-height: 1.6;
+}
+
+.hint {
+  margin-top: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding-top: 16px;
+  }
+
+  .info {
+    margin-top: 20px;
+  }
+}
+
+/* Raccourcis clavier : inutiles sur écran tactile. */
+@media (hover: none) and (pointer: coarse) {
+  .hint {
+    display: none;
+  }
+}

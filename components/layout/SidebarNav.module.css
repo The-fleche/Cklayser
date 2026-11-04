@@ -1,0 +1,143 @@
+/* ==========================================================================
+   SidebarNav — mesures capture (1672 × 941) :
+   pastille active x 22 → 227 (205 px), hauteur 49 px, y = 139 ;
+   pas vertical ≈ 57 px ; icône centrée à x = 50 ; libellé à x = 82.
+   ========================================================================== */
+
+.nav {
+  padding: 0 25px 0 22px; /* 22 px à gauche, pastille de 205 px dans 252 px */
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px; /* 49 px + 7 px = pas de 56 px */
+}
+
+/* La capture laisse 5 px de plus sous la première entrée (centres relevés :
+   163, 225, 280, 335). */
+.list > li:first-child {
+  margin-bottom: 5px;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px; /* bord droit de l'icône (62) → libellé (82) */
+  height: 49px;
+  padding: 0 16px; /* icône de 24 px centrée à 22 + 16 + 12 = 50 px */
+  border-radius: var(--radius-nav);
+  color: var(--color-text-body);
+  font-size: 0.90625rem; /* 14,5 px : largeurs des libellés de la capture */
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.item:hover {
+  background-color: var(--color-nav-hover);
+  color: var(--color-text);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin: 0 -1px; /* icône de 26 px dans une boîte optique de 24 px */
+  color: var(--color-icon);
+}
+
+.label {
+  white-space: nowrap;
+}
+
+/* ----- Entrée active : fond terracotta (--color-nav-active), texte ivoire ----- */
+.active,
+.active:hover {
+  background-color: var(--color-nav-active);
+  color: var(--color-text);
+  font-weight: 600;
+  /* Reflet chaud très léger en haut de la pastille. */
+  box-shadow: inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.08);
+}
+
+/* Icône active pleine. Pour la maison, la porte (dernier tracé, voir
+   navItems.ts) est remplie de la couleur de fond : elle se lit comme une
+   découpe dans la maison pleine. */
+.active .icon {
+  fill: currentColor;
+}
+
+.active .iconHouse path:last-child {
+  fill: var(--color-nav-active);
+}
+
+/* ----- Pastille « nouveautés » : 10 px, centrée à x = 219 ----------------- */
+.newsDot {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background-color: var(--color-indicator);
+  box-shadow: 0 0 8px rgb(var(--color-clay-rgb) / 0.45);
+}
+
+/* ==========================================================================
+   Tablette : sidebar de 76 px, icônes seules + infobulles
+   ========================================================================== */
+@media (max-width: 1279px) {
+  .nav {
+    padding: 0 14px;
+  }
+
+  .list > li:first-child {
+    margin-bottom: 0;
+  }
+
+  .item {
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+  }
+
+  /* Le libellé devient une infobulle : hors flux, à droite de l'icône. */
+  .label {
+    position: absolute;
+    left: calc(100% + 14px);
+    top: 50%;
+    padding: 7px 12px;
+    border-radius: 10px;
+    background-color: var(--color-surface-2);
+    border: 1px solid var(--border-popover);
+    box-shadow: var(--shadow-popover);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-4px, -50%);
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+
+  .item:hover .label,
+  .item:focus-visible .label {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  .newsDot {
+    top: 8px;
+    right: 7px;
+    margin-top: 0;
+    box-shadow: 0 0 0 2px var(--color-bg-sidebar);
+  }
+}

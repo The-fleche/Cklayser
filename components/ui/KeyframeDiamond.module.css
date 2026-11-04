@@ -1,0 +1,16 @@
+/* Losange : un carré tourné de 45°. Le dégradé interne imite le reflet
+   d'une pièce dorée (plus clair en haut à gauche). */
+.diamond {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--diamond-size, 6px);
+  height: var(--diamond-size, 6px);
+  transform: rotate(45deg);
+  border-radius: 1px;
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-keyframe) 55%, var(--color-ochre) 140%);
+}
+
+/* Halo discret : deux ombres dorées superposées. */
+.glow {
+  box-shadow: var(--glow-keyframe);
+}

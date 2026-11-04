@@ -1,0 +1,348 @@
+/* ==========================================================================
+   CKlayser — Feuille globale
+   --------------------------------------------------------------------------
+   Rôle : design system (variables CSS), reset minimal, typographie de base,
+   utilitaires d'accessibilité.
+   Règle d'équipe : AUCUNE valeur HEX dans les composants. Toute couleur est
+   déclarée ici puis consommée via var(--…).
+   Les valeurs « relevé capture » ont été mesurées pixel par pixel sur la
+   maquette de référence (1672 × 941 px).
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     1. FONDS — charbon chaud, jamais de noir pur
+     ------------------------------------------------------------------------ */
+  --color-bg: #1b130d;              /* fond du contenu (relevé capture) */
+  --color-bg-header: #1a120c;       /* header, un souffle plus sombre */
+  --color-bg-sidebar: #231911;      /* sidebar : brun très sombre, terreux */
+  --color-surface: #2a1e14;         /* surfaces : champ de recherche */
+  --color-surface-2: #2f2218;       /* menus et panneaux flottants */
+  --color-surface-3: #3a2a1e;       /* survol dans les menus */
+  --color-surface-studio: #271b12;  /* carte « Découvrir le Studio » */
+  --color-nav-hover: #2f2219;       /* survol des entrées de navigation */
+  --color-veil: #20150e;            /* voiles sombres posés sur les images */
+  --color-veil-rgb: 32 21 14;       /* idem, en composantes pour rgb(… / a) */
+  --color-bg-rgb: 26 18 12;         /* fond header/hero en composantes */
+  --color-overlay-rgb: 10 6 3;      /* assombrissement des modales */
+
+  /* ------------------------------------------------------------------------
+     2. COULEURS DE MARQUE — issues du logo
+     ------------------------------------------------------------------------ */
+  --color-terracotta: #be4d3d;          /* fond des boutons primaires (4,86:1 avec du blanc) */
+  --color-terracotta-pressed: #a63e30;  /* état pressé */
+  --color-clay: #e0774a;                /* orange argile */
+  --color-ochre: #b17b0d;               /* ocre */
+  --color-gold: #fdcf7b;                /* reflets dorés */
+  --color-gold-rgb: 253 207 123;
+  --color-clay-rgb: 224 119 74;
+
+  /* ------------------------------------------------------------------------
+     3. ACCENTS RELEVÉS SUR LA CAPTURE
+     ------------------------------------------------------------------------ */
+  --color-nav-active: #924323;      /* pastille de l'entrée active (« Accueil ») */
+  --color-indicator: #e16330;       /* pastilles de nouveauté / notifications */
+  --color-link: #e0774a;            /* « Voir plus », « Voir tout » (orange argile) */
+  --color-link-hover: #f09a72;
+  --color-keyframe: #edbb67;        /* losanges dorés (keyframes) */
+  --color-keyframe-line: #d9a458;   /* lignes décoratives dorées */
+  --color-decor-arc: #b98a52;       /* arcs fins du décor de la sidebar */
+  --color-decor-clay: #e06f34;      /* décor sidebar : couche argile */
+  --color-decor-clay-2: #d05b25;
+  --color-decor-brick: #c64a28;     /* décor sidebar : couche brique */
+  --color-decor-brick-2: #d25935;
+  --color-decor-deep: #a22f19;      /* décor sidebar : couche la plus profonde */
+  --color-decor-deep-2: #8f2915;
+
+  /* ------------------------------------------------------------------------
+     4. TEXTE
+     ------------------------------------------------------------------------ */
+  --color-text: #f8eadb;            /* ivoire chaud : titres (relevé #F9E9DA) */
+  --color-text-rgb: 248 234 219;    /* idem, en composantes pour rgb(… / a) */
+  --color-text-body: #ece0d6;       /* texte courant, navigation */
+  --color-text-soft: #ddd0c6;       /* synopsis, métadonnées des cartes */
+  --color-text-muted: #b3a69c;      /* beige désaturé : méta des chaînes (7,2:1) */
+  --color-text-label: #d2c0b4;      /* surtitres en capitales */
+  --color-text-placeholder: #9a8a7f;/* CORRIGÉ contraste : capture #87756B = 3,7:1 → 4,9:1 */
+  --color-text-on-accent: #ffffff;  /* texte sur terracotta */
+  --color-text-on-gold: #24120a;    /* texte sur doré */
+  --color-icon: #f6e9de;            /* icônes au trait fin */
+  --color-icon-muted: #c2b9b5;      /* chevron du compte */
+
+  /* ------------------------------------------------------------------------
+     5. BADGES — un seul par carte, priorité : En avance > Exclusif > 3D > Nouveau
+     ------------------------------------------------------------------------ */
+  --badge-early-bg: #be4d3d;        /* En avance : terracotta + blanc (4,86:1) */
+  --badge-early-fg: #ffffff;
+  --badge-exclusive-bg: #edab39;    /* Exclusif : doré clair (relevé capture) */
+  --badge-exclusive-fg: #24120a;
+  --badge-3d-bg: #1e482d;           /* 3D interactif : vert profond (relevé capture) */
+  --badge-3d-fg: #cdefd3;           /* vert clair (8,4:1) */
+  --badge-new-bg: #512a18;          /* Nouveau : brun sombre (relevé capture) */
+  --badge-new-fg: #fff3e7;
+
+  /* ------------------------------------------------------------------------
+     6. BORDURES ET DÉLIMITATIONS LUMINEUSES
+     ------------------------------------------------------------------------ */
+  --border-glow: #4a3d31;           /* cœur clair de la bordure sidebar/contenu */
+  --border-shadow: #170c05;         /* liserés sombres qui l'encadrent */
+  --border-header: #2b2119;         /* filet sous le header */
+  --border-subtle: #35271c;         /* séparateur de la sidebar */
+  --border-studio: #3e2c1f;         /* bordure brun-ocre de la carte Studio */
+  --border-popover: #3d2d21;        /* contour des menus */
+  --border-control: rgb(var(--color-text-rgb) / 0.42); /* contour du bouton « + » */
+  --border-avatar: #cbc3bf;         /* anneau clair de l'avatar */
+  --focus-ring: #fdcf7b;            /* anneau de focus doré, 2 px (12,6:1 sur le fond) */
+
+  /* ------------------------------------------------------------------------
+     7. OMBRES ET HALOS
+     ------------------------------------------------------------------------ */
+  --shadow-card: 0 18px 34px -14px rgb(6 3 1 / 0.85), 0 6px 14px -6px rgb(6 3 1 / 0.55);
+  --shadow-card-hover: 0 26px 46px -16px rgb(6 3 1 / 0.92), 0 10px 22px -8px rgb(6 3 1 / 0.6);
+  --shadow-popover: 0 28px 56px -18px rgb(5 2 1 / 0.85), 0 10px 24px -10px rgb(5 2 1 / 0.6);
+  --shadow-control: 0 6px 16px -6px rgb(5 2 1 / 0.7);
+  --glow-gold-soft: 0 0 0 1px rgb(var(--color-gold-rgb) / 0.32), 0 8px 26px -6px rgb(var(--color-gold-rgb) / 0.38);
+  --glow-keyframe: 0 0 5px rgb(var(--color-gold-rgb) / 0.8), 0 0 12px rgb(237 171 57 / 0.45);
+  --glow-border: 0 0 14px 0 rgb(var(--color-gold-rgb) / 0.05);
+
+  /* ------------------------------------------------------------------------
+     8. TYPOGRAPHIE — familles injectées par next/font (app/layout.tsx)
+     ------------------------------------------------------------------------ */
+  --font-serif: var(--font-fraunces), 'Iowan Old Style', Georgia, serif;
+  --font-sans: var(--font-manrope), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SFMono-Regular', monospace;
+
+  --text-xs: 0.75rem;     /* 12 px : plancher absolu, aucun texte en dessous */
+  --text-sm: 0.8125rem;   /* 13 px */
+  --text-base: 0.9375rem; /* 15 px */
+  --text-md: 1rem;        /* 16 px */
+  --text-lg: 1.0625rem;   /* 17 px */
+
+  /* ------------------------------------------------------------------------
+     9. LAYOUT — proportions mesurées sur la capture 1672 × 941
+     ------------------------------------------------------------------------ */
+  --sidebar-width: 252px;           /* bord droit de la sidebar à x = 252 */
+  --header-height: 90px;            /* filet du header à y = 89 */
+  --content-pad-left: 23px;         /* cartes à x = 275 (contenu à partir de x = 252) */
+  --content-pad-right: 32px;        /* cartes jusqu'à x = 1640 → 1672 − 1640 */
+  --title-indent: 7px;              /* titres de section à x = 282 (7 px de plus que les cartes) */
+  --hero-pad-left: 56px;            /* badge du hero à x = 308 */
+  --card-ratio: 16 / 10;            /* capture : 326 × 205 ≈ 1,59. Passer à 16 / 9 ici si besoin */
+  --card-gap: 20px;                 /* gouttière entre cartes */
+  --universe-card-width: 277px;     /* cartes univers, gouttière 17 px */
+  --universe-gap: 17px;
+  --cards-per-view: 4;              /* quatre cartes par rangée sur desktop */
+  --mobile-nav-height: 64px;
+
+  /* ------------------------------------------------------------------------
+     10. RAYONS
+     ------------------------------------------------------------------------ */
+  --radius-card: 14px;
+  --radius-nav: 14px;
+  --radius-panel: 16px;
+  --radius-studio: 12px;
+  --radius-hero-mobile: 20px;       /* la capture desktop montre un hero à bords francs */
+  --radius-pill: 999px;
+
+  /* ------------------------------------------------------------------------
+     11. MOUVEMENT
+     ------------------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 160ms;
+  --duration-base: 300ms;
+  --duration-slow: 700ms;
+
+  /* ------------------------------------------------------------------------
+     12. EMPILEMENT (z-index) — ordre volontairement explicite
+     ------------------------------------------------------------------------ */
+  --z-decor: 0;          /* décor organique de la sidebar, derrière tout */
+  --z-content: 1;
+  --z-header: 40;        /* header collant au-dessus du contenu défilant */
+  --z-sidebar: 50;       /* sidebar fixe au-dessus du header (infobulles tablette) */
+  --z-popover: 60;       /* menus, notifications, résultats de recherche */
+  --z-mobile-nav: 70;
+  --z-overlay: 80;       /* recherche plein écran (mobile) */
+  --z-toast: 90;
+  --z-dev: 100;          /* commutateur visiteur/membre (dev uniquement) */
+
+  color-scheme: dark;
+}
+
+/* Tablette : sidebar réduite aux icônes, trois cartes par vue. */
+@media (max-width: 1279px) {
+  :root {
+    --sidebar-width: 76px;
+    --cards-per-view: 3;
+    --content-pad-left: 24px;
+    --content-pad-right: 24px;
+    --hero-pad-left: 40px;
+  }
+}
+
+/* Mobile : plus de sidebar (navigation inférieure), header compact. */
+@media (max-width: 767px) {
+  :root {
+    --sidebar-width: 0px;
+    --header-height: 64px;
+    --cards-per-view: 1.35;
+    --content-pad-left: 16px;
+    --content-pad-right: 16px;
+    --title-indent: 0px;
+    --hero-pad-left: 16px;
+    --card-gap: 14px;
+    --universe-card-width: 200px;
+    --universe-gap: 12px;
+  }
+}
+
+/* ==========================================================================
+   RESET MINIMAL — sélecteurs d'éléments enveloppés dans :where()
+   (spécificité nulle) : ils ne l'emportent jamais sur une classe de
+   composant, quel que soit l'ordre de chargement des feuilles en production.
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Le header est collant : on décale les ancres pour qu'elles ne passent pas dessous. */
+  scroll-padding-top: calc(var(--header-height) + 16px);
+  background-color: var(--color-bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+  color: var(--color-text-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Garde-fou : aucun débordement horizontal de la page, même à 360 px. */
+  overflow-x: clip;
+}
+
+:where(h1, h2, h3, h4, p, figure, blockquote, dl, dd) {
+  margin: 0;
+}
+
+:where(ul, ol) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:where(img, svg, video, canvas, picture) {
+  display: block;
+}
+
+/* Les icônes SVG gardent leur taille propre : seuls les médias sont bornés. */
+:where(img, video, canvas, picture) {
+  max-width: 100%;
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+
+:where(button) {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+:where(button:disabled, [aria-disabled='true']) {
+  cursor: not-allowed;
+}
+
+:where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgb(var(--color-clay-rgb) / 0.45);
+  color: var(--color-text);
+}
+
+/* Barre de défilement discrète, dans la palette. */
+* {
+  scrollbar-color: var(--color-surface-3) transparent;
+  scrollbar-width: thin;
+}
+
+/* ==========================================================================
+   FOCUS — anneau doré de 2 px, toujours visible au clavier
+   ========================================================================== */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   UTILITAIRES D'ACCESSIBILITÉ
+   ========================================================================== */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Lien d'évitement : invisible jusqu'au premier Tab. */
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: var(--z-dev);
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-terracotta);
+  color: var(--color-text-on-accent);
+  font-weight: 700;
+  transform: translateY(-160%);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* Titres éditoriaux : Fraunces. */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* ==========================================================================
+   MOUVEMENT RÉDUIT — respecté partout
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

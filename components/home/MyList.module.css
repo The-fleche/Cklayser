@@ -1,0 +1,58 @@
+.page {
+  padding: 40px var(--content-pad-right) 48px calc(var(--content-pad-left) + var(--title-indent));
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: 10px;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.count {
+  margin-top: 10px;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.empty {
+  max-width: 560px;
+  margin-top: 20px;
+  color: var(--color-text-soft);
+  font-size: var(--text-md);
+  line-height: 1.6;
+}
+
+.inlineIcon {
+  display: inline-block;
+  margin: 0 4px;
+  vertical-align: -3px;
+  color: var(--color-gold);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--card-gap);
+  margin-top: 24px;
+}
