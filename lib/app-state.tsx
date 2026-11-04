@@ -18,6 +18,8 @@
  *  - authDialog    null | { mode: 'login' | 'signup', reason? } — fenêtre de
  *                  démonstration, aucun vrai compte n'est créé.
  *  - toast         dernier message annoncé (affiché + lu par les lecteurs d'écran).
+ *  - profile       profil du membre (nom, pseudo, photo…), modifiable sur
+ *                  /profil et conservé dans ce navigateur (localStorage).
  */
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -32,7 +34,8 @@ import {
 } from 'react';
 import { currentUser, initialUnreadNotificationIds } from '@/data/mock';
 import { getSeries } from '@/lib/catalog';
-import type { ViewerState } from '@/lib/types';
+import { restoreProfile } from '@/lib/profile';
+import type { UserProfile, ViewerState } from '@/lib/types';
 
 export type AuthMode = 'login' | 'signup';
 
@@ -69,12 +72,19 @@ interface AppStateValue {
   toast: ToastState | null;
   announce: (message: string) => void;
   dismissToast: () => void;
+
+  profile: UserProfile;
+  /** Enregistre le profil (déjà validé) ; renvoie false si le stockage a échoué. */
+  saveProfile: (next: UserProfile) => boolean;
+  resetProfile: () => void;
 }
 
 const AppStateContext = createContext<AppStateValue | null>(null);
 
 /** Clé de stockage de Ma liste (durée de vie : la session du navigateur). */
 const FAVORITES_STORAGE_KEY = 'cklayser:ma-liste';
+/** Clé de stockage du profil (conservé d'une visite à l'autre). */
+const PROFILE_STORAGE_KEY = 'cklayser:profil';
 
 /** Lit ?state= et ne retient que les deux valeurs reconnues. */
 function parseViewer(value: string | null): ViewerState | null {
@@ -111,6 +121,42 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [pathname, router, searchParams],
   );
 
+  /* ----- Profil ------------------------------------------------------------ */
+  const [profile, setProfile] = useState<UserProfile>(currentUser);
+  const profileName = useRef(currentUser.name);
+  profileName.current = profile.name;
+
+  // Lecture après l'hydratation (même principe que Ma liste).
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+      if (stored) setProfile(restoreProfile(JSON.parse(stored), currentUser));
+    } catch {
+      // Stockage indisponible ou données illisibles : profil par défaut.
+    }
+  }, []);
+
+  const saveProfile = useCallback((next: UserProfile) => {
+    setProfile(next);
+    try {
+      // avatar: null mémorise « photo retirée » (sinon la photo par défaut reviendrait).
+      window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({ ...next, avatar: next.avatar ?? null }));
+      return true;
+    } catch {
+      // Quota dépassé ou stockage bloqué : le profil reste appliqué pour cette visite.
+      return false;
+    }
+  }, []);
+
+  const resetProfile = useCallback(() => {
+    setProfile(currentUser);
+    try {
+      window.localStorage.removeItem(PROFILE_STORAGE_KEY);
+    } catch {
+      // Ignoré : rien à effacer.
+    }
+  }, []);
+
   /* ----- Annonces (toast + aria-live) ------------------------------------- */
   const [toast, setToast] = useState<ToastState | null>(null);
   const toastCounter = useRef(0);
@@ -129,7 +175,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const completeAuth = useCallback(() => {
     setAuthDialog(null);
     setViewer('member');
-    announce(`Bienvenue, ${currentUser.name.split(' ')[0]} ! Connexion de démonstration réussie.`);
+    announce(`Bienvenue, ${profileName.current.split(' ')[0]} ! Connexion de démonstration réussie.`);
   }, [announce, setViewer]);
 
   const signOut = useCallback(() => {
@@ -208,6 +254,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       toast,
       announce,
       dismissToast,
+      profile,
+      saveProfile,
+      resetProfile,
     }),
     [
       viewer,
@@ -226,6 +275,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       toast,
       announce,
       dismissToast,
+      profile,
+      saveProfile,
+      resetProfile,
     ],
   );
 

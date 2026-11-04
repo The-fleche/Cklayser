@@ -15,12 +15,11 @@
  *  - preload   précharge le visuel (première diapositive : LCP)
  *  - playing   la vidéo de fond (si la diapositive en a une) doit jouer :
  *              diapositive active, sans pause ni mouvement réduit
- *  - loopVideo vidéo en boucle (carrousel arrêté) ; sinon onVideoEnd est
- *              appelé à la fin de la vidéo pour passer à la suivante
+ *  - watchHref lien « Regarder maintenant » (dernier épisode de la série)
  *
  * Vidéo : l'affiche (slide.image) est rendue par next/image en dessous ;
- * la vidéo, muette et sans contrôles, apparaît en fondu une fois lancée.
- * Elle repart du début à chaque retour sur la diapositive.
+ * la vidéo, muette, sans contrôles et en boucle, apparaît en fondu une fois
+ * lancée. Elle repart du début à chaque retour sur la diapositive.
  *
  * États : membre (« Regarder maintenant ») / visiteur (« Regarder
  * gratuitement ») ; série enregistrée ou non (bouton « + » ↔ coche,
@@ -44,9 +43,8 @@ interface HeroSlideProps {
   position: number;
   total: number;
   preload?: boolean;
+  watchHref?: string;
   playing?: boolean;
-  loopVideo?: boolean;
-  onVideoEnd?: () => void;
 }
 
 export default function HeroSlide({
@@ -56,9 +54,8 @@ export default function HeroSlide({
   position,
   total,
   preload = false,
+  watchHref,
   playing = false,
-  loopVideo = true,
-  onVideoEnd,
 }: HeroSlideProps) {
   const { isMember, isFavorite, toggleFavorite } = useAppState();
   const badge = getPrimaryBadge(series);
@@ -115,13 +112,12 @@ export default function HeroSlide({
               poster={slide.image}
               muted
               playsInline
-              loop={loopVideo}
+              loop
               preload={preload ? 'auto' : 'metadata'}
               aria-hidden="true"
               tabIndex={-1}
               style={{ objectPosition: slide.focus ?? '50% 50%' }}
               onPlaying={() => setVideoShown(true)}
-              onEnded={onVideoEnd}
             />
           ) : null}
         </div>
@@ -134,7 +130,7 @@ export default function HeroSlide({
         <p className={styles.synopsis}>{series.synopsis}</p>
         <div className={styles.actions}>
           <Button
-            href={`/serie/${series.id}`}
+            href={watchHref ?? `/serie/${series.id}`}
             variant="primary"
             size="md"
             icon={<Play size={20} strokeWidth={2} fill="currentColor" />}

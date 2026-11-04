@@ -5,7 +5,7 @@
  * défaut d'image, initiales sur fond argile.
  *
  * Props :
- *  - src       chemin d'une image locale (facultatif)
+ *  - src       chemin d'une image locale ou data URL (photo importée), facultatif
  *  - initials  initiales affichées si aucune image n'est fournie
  *  - size      diamètre en px (40 par défaut, comme les chaînes de la capture)
  *  - ring      anneau clair autour de l'avatar (avatar du header)
@@ -35,7 +35,16 @@ export default function Avatar({ src, initials, size = 40, ring = false, alt = '
       aria-hidden={!src && !alt ? true : undefined}
     >
       {src ? (
-        <Image src={src} alt={alt} width={size} height={size} className={styles.image} />
+        <Image
+          src={src}
+          alt={alt}
+          width={size}
+          height={size}
+          className={styles.image}
+          // Photo importée par l'utilisateur (data URL) : déjà recadrée et
+          // compressée, elle ne passe pas par l'optimiseur d'images.
+          unoptimized={src.startsWith('data:')}
+        />
       ) : (
         <span className={styles.initials} aria-hidden="true">
           {initials}

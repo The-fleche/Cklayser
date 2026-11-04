@@ -1,0 +1,164 @@
+/* ==========================================================================
+   EpisodeList — vignettes 16:9 + texte, une ligne par épisode.
+   ========================================================================== */
+
+.section {
+  max-width: 900px;
+  margin-top: 40px;
+}
+
+.title {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 1.625rem;
+  font-weight: 600;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.item:hover {
+  background-color: var(--color-nav-hover);
+}
+
+/* Épisode en cours : contour doré + fond (pas seulement une couleur). */
+.current {
+  border-color: rgb(var(--color-gold-rgb) / 0.55);
+  background-color: var(--color-surface);
+}
+
+.thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 176px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: var(--color-surface-2);
+}
+
+.thumb img {
+  object-fit: cover;
+}
+
+.duration {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background-color: rgb(var(--color-bg-rgb) / 0.85);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--color-terracotta);
+  color: var(--color-text-on-accent);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.item:hover .play,
+.item:focus-visible .play {
+  opacity: 1;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.number {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-terracotta);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.name {
+  color: var(--color-text);
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.synopsis {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.povs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--color-text-label);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 767px) {
+  .item {
+    gap: 12px;
+    padding: 8px;
+  }
+
+  .thumb {
+    width: 128px;
+  }
+
+  .synopsis {
+    -webkit-line-clamp: 1;
+  }
+}

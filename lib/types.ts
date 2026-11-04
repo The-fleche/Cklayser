@@ -53,7 +53,9 @@ export interface HeroSlide {
   /** Visuel panoramique du hero (remplaçable). Avec une vidéo, sert d'affiche :
    *  affiché pendant le chargement et en mouvement réduit. */
   image: string;
-  /** Vidéo de fond facultative (MP4 H.264, muette, sans piste audio). */
+  /** Vidéo de fond facultative (MP4 H.264, muette, sans piste audio).
+   *  Si la série a un dernier épisode avec un extrait (Episode.teaser),
+   *  c'est cet extrait qui est joué, sans rien renseigner ici. */
   video?: string;
   imageAlt: string;
   /** Point focal de l'image (object-position), utile pour le recadrage mobile 4:5. */
@@ -96,12 +98,22 @@ export interface NotificationItem {
   href: string;
 }
 
+/** Profil du membre connecté (modifiable sur /profil). */
 export interface UserProfile {
+  /** Nom affiché (2 à 40 caractères). */
   name: string;
+  /** Pseudo sans « @ » : lettres minuscules, chiffres, point, tiret bas. */
   handle: string;
-  /** Initiales affichées dans l'avatar local. */
-  initials: string;
+  email: string;
+  /** Présentation courte (160 caractères au plus). */
+  bio: string;
+  /** Photo : chemin local ou image recadrée en data URL ; absente → initiales. */
+  avatar?: string;
+  /** Formule (non modifiable ici, gérée dans « Mes adhésions »). */
   plan: string;
+  favoriteUniverses: UniverseId[];
+  notifyNewEpisodes: boolean;
+  notifyChannelNews: boolean;
 }
 
 /**
@@ -128,6 +140,13 @@ export interface Episode {
   number: number;
   title: string;
   synopsis: string;
+  /** Durée en secondes (affichée dans la liste des épisodes). */
+  duration: number;
+  /** Miniature de l'épisode (liste des épisodes). */
+  thumbnail: string;
   /** Au moins un point de vue ; le premier est affiché par défaut. */
   povs: PointOfView[];
+  /** Extrait court, muet et bouclable, joué dans le hero de l'accueil
+   *  quand l'épisode est le dernier de sa série. */
+  teaser?: { src: string; poster: string };
 }

@@ -19,13 +19,11 @@
 import { BadgeCheck, Bookmark, ChevronDown, LogOut, Settings, User, WandSparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { currentUser } from '@/data/mock';
 import { useAppState } from '@/lib/app-state';
 import { useDismiss } from '@/lib/hooks';
+import { getInitials } from '@/lib/profile';
 import Avatar from '@/components/ui/Avatar';
 import styles from './UserMenu.module.css';
-
-const USER_AVATAR = '/avatars/ines-morel.svg';
 
 const LINKS = [
   { href: '/profil', label: 'Profil', icon: User },
@@ -36,7 +34,8 @@ const LINKS = [
 ] as const;
 
 export default function UserMenu({ compact = false }: { compact?: boolean }) {
-  const { favorites, signOut } = useAppState();
+  const { favorites, signOut, profile } = useAppState();
+  const initials = getInitials(profile.name);
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const buttonId = `${menuId}-bouton`;
@@ -105,7 +104,7 @@ export default function UserMenu({ compact = false }: { compact?: boolean }) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
-        aria-label={`Compte de ${currentUser.name}`}
+        aria-label={`Compte de ${profile.name}`}
         onClick={() => setOpen((value) => !value)}
         onKeyDown={(event) => {
           if (event.key === 'ArrowDown' && !open) {
@@ -114,7 +113,7 @@ export default function UserMenu({ compact = false }: { compact?: boolean }) {
           }
         }}
       >
-        <Avatar src={USER_AVATAR} size={compact ? 40 : 50} ring />
+        <Avatar src={profile.avatar} initials={initials} size={compact ? 40 : 50} ring />
         {compact ? null : (
           <ChevronDown size={20} strokeWidth={2} aria-hidden="true" className={styles.chevron} />
         )}
@@ -122,10 +121,10 @@ export default function UserMenu({ compact = false }: { compact?: boolean }) {
 
       <div ref={panelRef} className={styles.panel} hidden={!open}>
         <div className={styles.profile}>
-          <Avatar src={USER_AVATAR} size={44} />
+          <Avatar src={profile.avatar} initials={initials} size={44} />
           <div className={styles.profileText}>
-            <p className={styles.name}>{currentUser.name}</p>
-            <p className={styles.plan}>{currentUser.plan}</p>
+            <p className={styles.name}>{profile.name}</p>
+            <p className={styles.plan}>{profile.plan}</p>
           </div>
         </div>
 

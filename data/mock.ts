@@ -230,10 +230,10 @@ export const heroSlides: HeroSlide[] = [
   {
     id: 'slide-echos-aelith',
     seriesId: 'echos-aelith',
-    image: '/hero/echos-aelith-poster.webp',
-    video: '/hero/echos-aelith.mp4',
+    // La vidéo vient de l'extrait du dernier épisode (voir episodes, plus bas).
+    image: '/watch/echos-aelith/s1e2-extrait-poster.webp',
     imageAlt: 'Animation 3D : un robot humanoïde blanc et gris marche et se retourne sur une plaine grise, sous un ciel bleu.',
-    focus: '30% 30%',
+    focus: '30% 8%',
   },
   {
     id: 'slide-cite-des-engrenages',
@@ -320,11 +320,18 @@ export const universes: Universe[] = [
 /* --------------------------------------------------------------------------
    Utilisateur et notifications
    -------------------------------------------------------------------------- */
+/** Profil de départ ; les modifications faites sur /profil sont conservées
+ *  dans le navigateur (localStorage), voir lib/app-state.tsx. */
 export const currentUser: UserProfile = {
   name: 'Inès Morel',
-  handle: '@ines.morel',
-  initials: 'IM',
+  handle: 'ines.morel',
+  email: 'ines.morel@exemple.fr',
+  bio: 'Fan d’animation 3D et de mondes en ruines. Toujours partante pour un nouveau point de vue.',
+  avatar: '/avatars/ines-morel.svg',
   plan: 'Membre · 2 adhésions',
+  favoriteUniverses: ['fantasy', 'science-fiction'],
+  notifyNewEpisodes: true,
+  notifyChannelNews: false,
 };
 
 export const notifications: NotificationItem[] = [
@@ -376,6 +383,8 @@ export const episodes: Episode[] = [
     season: 1,
     number: 1,
     title: 'Premier pas',
+    duration: 2.7,
+    thumbnail: '/watch/echos-aelith/s1e1-pov2-poster.webp',
     synopsis:
       'Le premier mouvement d’Aelith, filmé sous trois angles. Changez de point de vue à tout moment : la scène reprend exactement au même instant.',
     povs: [
@@ -401,5 +410,31 @@ export const episodes: Episode[] = [
         poster: '/watch/echos-aelith/s1e1-pov3-poster.webp',
       },
     ],
+  },
+  {
+    id: 'echos-aelith-s1e2',
+    seriesId: 'echos-aelith',
+    season: 1,
+    number: 2,
+    title: 'L’éveil',
+    duration: 12,
+    thumbnail: '/watch/echos-aelith/s1e2-poster.webp',
+    synopsis:
+      'Aelith s’éveille sur la plaine grise, observe l’horizon, puis fait ses premiers pas vers l’inconnu.',
+    povs: [
+      {
+        id: 'principal',
+        label: 'Caméra principale',
+        description: 'Caméra qui suit le personnage, plans variés.',
+        src: '/watch/echos-aelith/s1e2.mp4',
+        poster: '/watch/echos-aelith/s1e2-poster.webp',
+      },
+    ],
+    // Extrait de 6 s (2,5 s → 8,5 s), fin fondue dans le début : la boucle
+    // du hero est continue.
+    teaser: {
+      src: '/watch/echos-aelith/s1e2-extrait.mp4',
+      poster: '/watch/echos-aelith/s1e2-extrait-poster.webp',
+    },
   },
 ];

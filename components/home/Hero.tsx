@@ -10,10 +10,13 @@
  * États et comportements :
  *  - navigation précédente / suivante (flèches rondes en bas à droite) ;
  *  - indicateurs cliquables (actif en terracotta, aria-current) ;
- *  - défilement automatique toutes les 7 s ; une diapositive vidéo reste
- *    affichée jusqu'à la fin de sa vidéo (sécurité : 20 s au plus) ;
- *  - vidéo de fond muette : lecture seulement sur la diapositive active,
- *    arrêtée par le bouton pause, l'onglet masqué ou le mouvement réduit ;
+ *  - défilement automatique toutes les 7 s ; 12 s pour une diapositive
+ *    vidéo (deux passages de l'extrait) ;
+ *  - vidéo de fond : extrait du DERNIER épisode de la série quand il en a un
+ *    (Episode.teaser), sinon slide.video. Muette, lancée automatiquement,
+ *    en boucle ; lecture seulement sur la diapositive active, arrêtée par
+ *    le bouton pause, l'onglet masqué ou le mouvement réduit ;
+ *  - « Regarder maintenant » mène à ce dernier épisode ;
  *  - pause au survol et au focus clavier ; bouton pause/lecture accessible
  *    au clavier (visible dès qu'il reçoit le focus, et en permanence sur
  *    une diapositive vidéo : WCAG 2.2.2) ;
@@ -25,22 +28,38 @@
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type TouchEvent } from 'react';
 import { heroSlides } from '@/data/mock';
-import { getSeries } from '@/lib/catalog';
+import { getLatestEpisode, getSeries } from '@/lib/catalog';
 import { usePrefersReducedMotion } from '@/lib/hooks';
-import type { Series } from '@/lib/types';
+import type { HeroSlide as HeroSlideData, Series } from '@/lib/types';
 import IconButton from '@/components/ui/IconButton';
 import HeroSlide from './HeroSlide';
 import styles from './Hero.module.css';
 
 const AUTOPLAY_DELAY = 7000;
-/** Délai maximal d'une diapositive vidéo si l'événement « ended » n'arrive pas
- *  (lecture refusée, réseau lent). */
-const VIDEO_SLIDE_MAX_DELAY = 20000;
+/** Durée d'une diapositive vidéo : deux passages d'un extrait de 6 s. */
+const VIDEO_SLIDE_DELAY = 12000;
 const SWIPE_THRESHOLD = 50;
 
-const slides = heroSlides
-  .map((slide) => ({ slide, series: getSeries(slide.seriesId) }))
-  .filter((entry): entry is { slide: (typeof heroSlides)[number]; series: Series } => entry.series !== undefined);
+interface ResolvedSlide {
+  slide: HeroSlideData;
+  series: Series;
+  watchHref: string;
+}
+
+/** Associe chaque diapositive à sa série et à l'extrait de son dernier épisode. */
+const slides: ResolvedSlide[] = heroSlides.flatMap((slide) => {
+  const series = getSeries(slide.seriesId);
+  if (!series) return [];
+  const latest = getLatestEpisode(series.id);
+  const teaser = latest?.teaser;
+  return [
+    {
+      slide: teaser ? { ...slide, video: teaser.src, image: teaser.poster } : slide,
+      series,
+      watchHref: latest ? `/serie/${series.id}?episode=${latest.number}` : `/serie/${series.id}`,
+    },
+  ];
+});
 
 export default function Hero() {
   const total = slides.length;
@@ -62,19 +81,14 @@ export default function Hero() {
   const currentHasVideo = Boolean(slides[index]?.slide.video);
   const videoPlaying = !reducedMotion && !userPaused && !pageHidden;
 
-  // Minuterie relancée à chaque changement de diapositive (7 s pleines).
-  // Diapositive vidéo : la fin de la vidéo fait avancer (onVideoEnd) ; la
-  // minuterie n'est qu'une sécurité.
+  // Minuterie relancée à chaque changement de diapositive (7 s pleines,
+  // 12 s pour une vidéo, qui boucle pendant ce temps).
   useEffect(() => {
     if (!autoplay) return undefined;
-    const delay = currentHasVideo ? VIDEO_SLIDE_MAX_DELAY : AUTOPLAY_DELAY;
+    const delay = currentHasVideo ? VIDEO_SLIDE_DELAY : AUTOPLAY_DELAY;
     const timer = window.setTimeout(() => setIndex((current) => (current + 1) % total), delay);
     return () => window.clearTimeout(timer);
   }, [autoplay, currentHasVideo, index, total]);
-
-  const onVideoEnd = useCallback(() => {
-    if (autoplay) next();
-  }, [autoplay, next]);
 
   useEffect(() => {
     const onVisibility = () => setPageHidden(document.visibilityState === 'hidden');
@@ -138,18 +152,17 @@ export default function Hero() {
       {/* Région annoncée seulement quand la rotation est arrêtée, pour ne
           pas interrompre les lecteurs d'écran toutes les 7 s. */}
       <div className={styles.viewport} aria-live={autoplay ? 'off' : 'polite'}>
-        {slides.map(({ slide, series }, slideIndex) => (
+        {slides.map(({ slide, series, watchHref }, slideIndex) => (
           <HeroSlide
             key={slide.id}
             slide={slide}
             series={series}
+            watchHref={watchHref}
             active={slideIndex === index}
             position={slideIndex + 1}
             total={total}
             preload={slideIndex === 0}
             playing={slideIndex === index && videoPlaying}
-            loopVideo={!autoplay}
-            onVideoEnd={onVideoEnd}
           />
         ))}
       </div>

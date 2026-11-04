@@ -44,6 +44,7 @@ app/
   serie/[id]/page.tsx     page de visionnage (lecteur à points de vue) ou « Bientôt disponible »
   [section]/page.tsx      Découvrir, Séries Exclusives, Fandoms, Chaînes, Profil, Adhésions, Paramètres
   chaine/[id]/page.tsx    page chaîne « Bientôt disponible »
+  profil/page.tsx         profil du membre (photo, nom, pseudo, préférences)
   ma-liste/page.tsx       séries enregistrées (session)
   not-found.tsx           404
 components/
@@ -52,15 +53,16 @@ components/
                           NotificationsPanel, MobileNav, DevStateToggle, navItems
   home/                   Hero, HeroSlide, SectionHeader, SeriesRow, SeriesCard, UniverseCard,
                           HomeSections, MyList
-  watch/                  PovPlayer (lecteur vidéo à points de vue)
+  watch/                  PovPlayer (lecteur vidéo à points de vue), EpisodeList
+  profile/                ProfileEditor (page /profil)
   ui/                     Button, IconButton, Badge, Avatar, KeyframeDiamond, ComingSoon, Toast
 data/mock.ts              séries, univers, chaînes, utilisateur, notifications, slides
 lib/                      types.ts, catalog.ts (requêtes + formatage), app-state.tsx (contexte),
-                          hooks.ts, theme.ts
+                          profile.ts (validation, photo), hooks.ts, theme.ts
 public/
   brand/logo.png          logo original (conversion PNG sans perte du fichier fourni)
-  watch/echos-aelith/     épisode 1 : s1e1-pov1..3.mp4 (+ affiches -poster.webp)
-  hero/echos-aelith.mp4   vidéo de la 1re diapositive du hero (+ affiche -poster.webp)
+  watch/echos-aelith/     épisode 1 : s1e1-pov1..3.mp4 ; épisode 2 : s1e2.mp4 ;
+                          extrait du hero : s1e2-extrait.mp4 (+ affiches -poster.webp)
   hero/ series/ universes/ avatars/   visuels SVG de remplacement
 ```
 
@@ -70,26 +72,32 @@ Chaque série, slide, univers et avatar pointe vers un fichier local à nom stab
 
 Pour le hero, le champ `focus` (`object-position`) règle le recadrage, notamment en 4:5 sur mobile.
 
-### Vidéo dans le hero
+### Vidéo dans le hero : extrait du dernier épisode
 
-Une diapositive accepte un champ `video` (en plus de `image`, qui sert d'affiche). La première diapositive l'utilise :
+La première diapositive joue automatiquement, en boucle et sans son, un extrait du **dernier épisode** de sa série. Le hero le retrouve tout seul : il prend le champ `teaser` du dernier épisode (`getLatestEpisode`), donc publier un épisode 3 avec un `teaser` suffit à changer la vidéo de l'accueil. « Regarder maintenant » mène à ce même épisode (`/serie/echos-aelith?episode=2`).
 
-- `public/hero/echos-aelith.mp4` : H.264, 1072 × 720, 12 s, sans piste audio, `faststart`. Il est tiré de la vidéo fournie, avec la bande droite recadrée pour retirer la notification NVIDIA.
-- `public/hero/echos-aelith-poster.webp` : première image, affichée pendant le chargement et en mouvement réduit.
-- La vidéo est muette, sans contrôles et en lecture inline. Elle ne joue que sur la diapositive active et repart du début à chaque retour.
+- `s1e2-extrait.mp4` : 6 s de l'épisode 2 (de 2,5 s à 8,5 s), sans piste audio. La dernière demi-seconde est fondue dans la première image, ce qui rend la boucle continue.
+- L'affiche `s1e2-extrait-poster.webp` est montrée pendant le chargement et quand l'utilisateur a réduit les animations.
+- La vidéo ne joue que sur la diapositive active et repart du début à chaque retour. La diapositive reste affichée 12 s, soit deux passages, au lieu de 7.
 - Sur desktop et tablette, elle est cadrée à droite de la colonne de texte avec un fondu à gauche. Sur mobile, elle occupe le format 4:5.
-- La diapositive dure le temps de la vidéo (20 s au plus si la lecture est bloquée), au lieu de 7 s. Au survol, la vidéo tourne en boucle.
-- Le bouton pause reste visible sur cette diapositive, mobile compris (WCAG 2.2.2), et arrête la vidéo et le défilement. Avec `prefers-reduced-motion`, la vidéo ne démarre pas et seule l'affiche est montrée.
+- Le bouton pause reste visible sur cette diapositive, mobile compris (WCAG 2.2.2). Avec `prefers-reduced-motion`, la vidéo ne démarre pas.
 
-Pour régénérer le fichier à partir d'une nouvelle source :
+Fabriquer un extrait bouclable de 6 s, ici à partir de 2,5 s :
 
 ```bash
-ffmpeg -i source.mp4 -an -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart public/hero/echos-aelith.mp4
+ffmpeg -i episode.mp4 -filter_complex "[0:v]split[x][y];[x]trim=2.5:8.5,setpts=PTS-STARTPTS[a];[y]trim=2.0:2.5,setpts=PTS-STARTPTS[b];[a][b]xfade=transition=fade:duration=0.5:offset=5.5,format=yuv420p[v]" -map "[v]" -an -c:v libx264 -crf 24 -movflags +faststart extrait.mp4
 ```
 
 ## Page de visionnage et points de vue
 
-`/serie/echos-aelith` (bouton « Regarder maintenant » du hero) ouvre le lecteur de l'épisode 1. Une série sans épisode vidéo affiche toujours « Bientôt disponible ». Les épisodes sont décrits dans `data/mock.ts` (`episodes`), avec un tableau `povs` : un point de vue par vidéo du même mouvement.
+`/serie/echos-aelith?episode=N` ouvre le lecteur de l'épisode N ; sans paramètre, c'est l'épisode 1. La liste des épisodes est sous le lecteur. Une série sans épisode vidéo affiche toujours « Bientôt disponible ». Les épisodes sont décrits dans `data/mock.ts` (`episodes`), avec un tableau `povs` : un point de vue par vidéo du même mouvement. Avec un seul point de vue, le sélecteur est masqué.
+
+| Épisode | Vidéo | Points de vue |
+| --- | --- | --- |
+| 1 · Premier pas | `s1e1-pov1..3.mp4` (≈ 2,5 s) | 3 : Dos, Plan large, Profil |
+| 2 · L'éveil | `s1e2.mp4` (12 s) | 1 : Caméra principale |
+
+`s1e2.mp4` vient de la vidéo fournie pour le hero. La notification NVIDIA « Alt+Y » visible en haut à droite a été effacée : chaque colonne de la zone est un fondu vertical entre le ciel au-dessus et le ciel en dessous. L'image reste en 16:9 et rien n'est recadré.
 
 Changement de point de vue (`components/watch/PovPlayer.tsx`) :
 
@@ -106,6 +114,26 @@ Changement de point de vue (`components/watch/PovPlayer.tsx`) :
 - Raccourcis quand le focus est dans le lecteur : Espace ou K (lecture), ← / → (±0,5 s), M (son), F (plein écran), 1 à 3 (point de vue).
 
 Pour ajouter un épisode : déposer les MP4 dans `public/watch/<serie>/` et les rendre lisibles au démarrage avec `ffmpeg -i in.mp4 -c copy -movflags +faststart out.mp4`, puis ajouter une entrée dans `episodes`.
+
+## Page profil
+
+`/profil` (menu du compte → Profil) permet de modifier :
+
+- **La photo.** L'image choisie (JPEG, PNG, WebP, GIF ou AVIF, 8 Mo au plus) est recadrée au centre en carré de 256 px dans le navigateur (`resizeAvatar`), puis montrée en aperçu jusqu'à l'enregistrement. « Retirer » revient aux initiales.
+- **Le nom affiché** (2 à 40 caractères).
+- **Le pseudo.** Il est normalisé à la saisie : sans « @ », en minuscules, avec lettres, chiffres, « . » et « _ », sur 3 à 20 caractères.
+- **L'e-mail et la présentation** (160 caractères au plus, avec compteur).
+- **Les univers préférés et les notifications.**
+
+Fonctionnement :
+
+- Les erreurs s'affichent sous chaque champ, reliées par `aria-describedby`. À l'envoi, le focus va au premier champ en erreur.
+- « Enregistrer » et « Annuler » ne s'activent que s'il y a des modifications. Le navigateur prévient si l'on quitte la page avec des modifications non enregistrées.
+- Une fois enregistré, le profil s'applique aussitôt au header (photo, nom, menu). Il est conservé dans ce navigateur (`localStorage`, clé `cklayser:profil`) et relu avec validation au chargement.
+- « Restaurer le profil de démonstration » efface ce stockage.
+- En visiteur, la page invite à se connecter.
+
+Aucun serveur : c'est une démonstration. Pour brancher une API, remplacer `saveProfile` dans `lib/app-state.tsx`.
 
 ## Design system
 

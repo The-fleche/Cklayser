@@ -40,11 +40,6 @@ const SECTIONS: Record<string, SectionCopy> = {
     title: 'Toutes les chaînes',
     description: 'Retrouvez les studios et les créateurs qui publient leurs séries sur CKlayser.',
   },
-  profil: {
-    kicker: 'Compte · Bientôt disponible',
-    title: 'Votre profil',
-    description: 'Avatar, historique de visionnage et séries suivies seront réunis sur votre profil.',
-  },
   adhesions: {
     kicker: 'Compte · Bientôt disponible',
     title: 'Mes adhésions',

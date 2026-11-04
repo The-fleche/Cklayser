@@ -1,8 +1,9 @@
 /**
  * /serie/[id] — page de visionnage.
  *
- * - Série avec un épisode vidéo (data/mock.ts → episodes) : lecteur à
- *   points de vue (PovPlayer) + informations de l'épisode.
+ * - Série avec des épisodes vidéo (data/mock.ts → episodes) : lecteur à
+ *   points de vue (PovPlayer), informations et liste des épisodes.
+ *   L'épisode est choisi par ?episode=N (le premier par défaut).
  * - Autres séries : fiche « Bientôt disponible ».
  */
 import type { Metadata } from 'next';
@@ -13,32 +14,50 @@ import Badge from '@/components/ui/Badge';
 import ComingSoon from '@/components/ui/ComingSoon';
 import KeyframeDiamond from '@/components/ui/KeyframeDiamond';
 import PovPlayer from '@/components/watch/PovPlayer';
-import { formatSeriesMeta, getChannel, getFirstEpisode, getPrimaryBadge, getSeries } from '@/lib/catalog';
+import EpisodeList from '@/components/watch/EpisodeList';
+import { formatSeriesMeta, getChannel, getEpisode, getEpisodes, getPrimaryBadge, getSeries } from '@/lib/catalog';
 import styles from './watch.module.css';
 
 interface SeriePageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ episode?: string | string[] }>;
 }
 
-export async function generateMetadata({ params }: SeriePageProps): Promise<Metadata> {
+/** ?episode=2 → 2 ; toute autre valeur → undefined (premier épisode). */
+function parseEpisodeNumber(value: string | string[] | undefined): number | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const number = Number(raw);
+  return Number.isInteger(number) && number > 0 ? number : undefined;
+}
+
+export async function generateMetadata({ params, searchParams }: SeriePageProps): Promise<Metadata> {
   const { id } = await params;
   const series = getSeries(id);
-  return { title: series ? series.title : 'Série introuvable' };
+  if (!series) return { title: 'Série introuvable' };
+  const episode = getEpisode(series.id, parseEpisodeNumber((await searchParams).episode));
+  return { title: episode ? `${series.title} · Épisode ${episode.number}` : series.title };
 }
 
-export default async function SeriePage({ params }: SeriePageProps) {
+export default async function SeriePage({ params, searchParams }: SeriePageProps) {
   const { id } = await params;
+  const requested = parseEpisodeNumber((await searchParams).episode);
   const series = getSeries(id);
   if (!series) notFound();
 
   const channel = getChannel(series.channelId);
   const badge = getPrimaryBadge(series);
-  const episode = getFirstEpisode(series.id);
+  const episode = getEpisode(series.id, requested);
+  const allEpisodes = getEpisodes(series.id);
 
   if (episode) {
     return (
       <div className={styles.page}>
-        <PovPlayer povs={episode.povs} title={`${series.title}, épisode ${episode.number} : ${episode.title}`} />
+        {/* key : un nouvel épisode remonte un lecteur neuf (état remis à zéro). */}
+        <PovPlayer
+          key={episode.id}
+          povs={episode.povs}
+          title={`${series.title}, épisode ${episode.number} : ${episode.title}`}
+        />
 
         <section className={styles.info} aria-labelledby="episode-title">
           <p className={styles.kicker}>
@@ -65,6 +84,8 @@ export default async function SeriePage({ params }: SeriePageProps) {
             </p>
           ) : null}
         </section>
+
+        <EpisodeList seriesId={series.id} episodes={allEpisodes} currentId={episode.id} />
       </div>
     );
   }

@@ -7,7 +7,8 @@
  * vue à l'autre sans perdre l'instant en cours.
  *
  * Props :
- *  - povs    points de vue de l'épisode (même mouvement, mêmes instants)
+ *  - povs    points de vue de l'épisode (même mouvement, mêmes instants) ;
+ *            avec un seul point de vue, le sélecteur est masqué
  *  - title   titre de l'épisode (nom accessible du lecteur)
  *
  * Principe de la synchronisation :
@@ -279,6 +280,7 @@ export default function PovPlayer({ povs, title }: PovPlayerProps) {
     }
   };
 
+  const multiPov = povs.length > 1;
   const progress = duration > 0 ? Math.min(time / duration, 1) : 0;
   const PlayIcon = ended ? RotateCcw : playing ? Pause : Play;
   const playLabel = ended ? 'Revoir' : playing ? 'Pause' : 'Lecture';
@@ -289,7 +291,7 @@ export default function PovPlayer({ povs, title }: PovPlayerProps) {
       className={`${styles.player} ${fullscreen ? styles.isFullscreen : ''}`}
       role="region"
       aria-label={`Lecteur vidéo : ${title}`}
-      aria-keyshortcuts="Space K ArrowLeft ArrowRight M F 1 2 3"
+      aria-keyshortcuts={`Space K ArrowLeft ArrowRight M F${multiPov ? ` ${povs.map((_, index) => index + 1).join(' ')}` : ''}`}
       onKeyDown={onKeyDown}
     >
       <div className={styles.stage}>
@@ -317,9 +319,11 @@ export default function PovPlayer({ povs, title }: PovPlayerProps) {
           </button>
         ) : null}
 
-        <p className={styles.povTag} aria-hidden="true">
-          <span className={styles.povTagNumber}>POV {active + 1}</span> {povs[active]?.label}
-        </p>
+        {multiPov ? (
+          <p className={styles.povTag} aria-hidden="true">
+            <span className={styles.povTagNumber}>POV {active + 1}</span> {povs[active]?.label}
+          </p>
+        ) : null}
       </div>
 
       <div className={styles.controls}>
@@ -367,28 +371,30 @@ export default function PovPlayer({ povs, title }: PovPlayerProps) {
           ) : null}
         </div>
 
-        <div className={styles.povs} role="group" aria-label="Point de vue">
-          <span className={styles.povsLabel} aria-hidden="true">
-            Point de vue
-          </span>
-          {povs.map((pov, index) => (
-            <button
-              key={pov.id}
-              type="button"
-              className={styles.pov}
-              aria-pressed={index === active}
-              aria-label={`Point de vue ${index + 1} : ${pov.label}. ${pov.description}`}
-              title={`${pov.description} (touche ${index + 1})`}
-              onClick={() => void switchPov(index)}
-            >
-              <span className={styles.povThumb} style={{ backgroundImage: `url(${pov.poster})` }} aria-hidden="true" />
-              <span className={styles.povText} aria-hidden="true">
-                <span className={styles.povNumber}>POV {index + 1}</span>
-                <span className={styles.povName}>{pov.label}</span>
-              </span>
-            </button>
-          ))}
-        </div>
+        {multiPov ? (
+          <div className={styles.povs} role="group" aria-label="Point de vue">
+            <span className={styles.povsLabel} aria-hidden="true">
+              Point de vue
+            </span>
+            {povs.map((pov, index) => (
+              <button
+                key={pov.id}
+                type="button"
+                className={styles.pov}
+                aria-pressed={index === active}
+                aria-label={`Point de vue ${index + 1} : ${pov.label}. ${pov.description}`}
+                title={`${pov.description} (touche ${index + 1})`}
+                onClick={() => void switchPov(index)}
+              >
+                <span className={styles.povThumb} style={{ backgroundImage: `url(${pov.poster})` }} aria-hidden="true" />
+                <span className={styles.povText} aria-hidden="true">
+                  <span className={styles.povNumber}>POV {index + 1}</span>
+                  <span className={styles.povName}>{pov.label}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <p className="sr-only" aria-live="polite">

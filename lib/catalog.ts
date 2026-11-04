@@ -7,9 +7,22 @@
 import { channels, episodes, series, universes } from '@/data/mock';
 import type { BadgeKind, Channel, Episode, Series, Universe } from '@/lib/types';
 
-/** Premier épisode visionnable d'une série (avec au moins une vidéo). */
-export function getFirstEpisode(seriesId: string): Episode | undefined {
-  return episodes.find((item) => item.seriesId === seriesId && item.povs.length > 0);
+/** Épisodes visionnables d'une série (avec au moins une vidéo), dans l'ordre. */
+export function getEpisodes(seriesId: string): Episode[] {
+  return episodes
+    .filter((item) => item.seriesId === seriesId && item.povs.length > 0)
+    .sort((a, b) => a.season - b.season || a.number - b.number);
+}
+
+/** Épisode n° `number` d'une série (saison 1), ou le premier si absent. */
+export function getEpisode(seriesId: string, number?: number): Episode | undefined {
+  const list = getEpisodes(seriesId);
+  return list.find((item) => item.number === number) ?? list[0];
+}
+
+/** Dernier épisode publié d'une série. */
+export function getLatestEpisode(seriesId: string): Episode | undefined {
+  return getEpisodes(seriesId).at(-1);
 }
 
 /** Retrouve une série par son identifiant. */
