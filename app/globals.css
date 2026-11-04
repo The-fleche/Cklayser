@@ -29,7 +29,7 @@
   /* ------------------------------------------------------------------------
      2. COULEURS DE MARQUE — issues du logo
      ------------------------------------------------------------------------ */
-  --color-terracotta: #be4d3d;          /* fond des boutons primaires (4,86:1 avec du blanc) */
+  --color-terracotta: #be4d3d;          /* terracotta du logo (dégradés, barres de progression) ; boutons : --color-action */
   --color-terracotta-pressed: #a63e30;  /* état pressé */
   --color-clay: #e0774a;                /* orange argile */
   --color-ochre: #b17b0d;               /* ocre */
@@ -41,6 +41,13 @@
      3. ACCENTS RELEVÉS SUR LA CAPTURE
      ------------------------------------------------------------------------ */
   --color-nav-active: #924323;      /* pastille de l'entrée active (« Accueil ») */
+  /* Couleur d'ACTION unique : celle de l'entrée active de la navigation,
+     reprise par tous les boutons pleins et les états sélectionnés (bouton
+     primaire, lecture, point de vue, pastilles, interrupteurs, badges).
+     Texte blanc : 6,9:1 ; survol 5,7:1 ; pressé 8,4:1. */
+  --color-action: #924323;
+  --color-action-hover: #a24e2c;
+  --color-action-pressed: #7d3a1e;
   --color-indicator: #e16330;       /* pastilles de nouveauté / notifications */
   --color-link: #e0774a;            /* « Voir plus », « Voir tout » (orange argile) */
   --color-link-hover: #f09a72;
@@ -72,7 +79,7 @@
   /* ------------------------------------------------------------------------
      5. BADGES — un seul par carte, priorité : En avance > Exclusif > 3D > Nouveau
      ------------------------------------------------------------------------ */
-  --badge-early-bg: #be4d3d;        /* En avance : terracotta + blanc (4,86:1) */
+  --badge-early-bg: #924323;        /* En avance : couleur d'action + blanc (6,9:1) */
   --badge-early-fg: #ffffff;
   --badge-exclusive-bg: #edab39;    /* Exclusif : doré clair (relevé capture) */
   --badge-exclusive-fg: #24120a;
@@ -122,6 +129,7 @@
      9. LAYOUT — proportions mesurées sur la capture 1672 × 941
      ------------------------------------------------------------------------ */
   --sidebar-width: 252px;           /* bord droit de la sidebar à x = 252 */
+  --sidebar-rail-width: 76px;       /* sidebar repliée (rail d'icônes) */
   --header-height: 90px;            /* filet du header à y = 89 */
   --content-pad-left: 23px;         /* cartes à x = 275 (contenu à partir de x = 252) */
   --content-pad-right: 32px;        /* cartes jusqu'à x = 1640 → 1672 − 1640 */
@@ -141,6 +149,7 @@
   --radius-nav: 14px;
   --radius-panel: 16px;
   --radius-studio: 12px;
+  --radius-hero: 24px;              /* hero en bulle (desktop, tablette) */
   --radius-hero-mobile: 20px;       /* la capture desktop montre un hero à bords francs */
   --radius-pill: 999px;
 
@@ -169,10 +178,17 @@
   color-scheme: dark;
 }
 
+/* Desktop, sidebar repliée par le bouton menu : rail d'icônes. */
+@media (min-width: 1280px) {
+  :root[data-sidebar='collapsed'] {
+    --sidebar-width: var(--sidebar-rail-width);
+  }
+}
+
 /* Tablette : sidebar réduite aux icônes, trois cartes par vue. */
 @media (max-width: 1279px) {
   :root {
-    --sidebar-width: 76px;
+    --sidebar-width: var(--sidebar-rail-width);
     --cards-per-view: 3;
     --content-pad-left: 24px;
     --content-pad-right: 24px;
@@ -317,7 +333,7 @@ body {
   z-index: var(--z-dev);
   padding: 10px 18px;
   border-radius: var(--radius-pill);
-  background: var(--color-terracotta);
+  background: var(--color-action);
   color: var(--color-text-on-accent);
   font-weight: 700;
   transform: translateY(-160%);

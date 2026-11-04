@@ -1,18 +1,28 @@
 /* ==========================================================================
-   Hero — mesures capture : bord à bord de x = 253 à 1672 et de y = 90 à
-   528 (1419 × 438 px), coins francs sur desktop. Flèches de 40 px :
-   centres à x = 1564 et 1615, y = 483 (marges 38 px à droite, 26 px en
-   bas, 12 px entre elles). Indicateurs de 12 px au pas de 29 px, centrés
-   sur x ≈ 930, à 13 px du bas.
+   Hero — « bulle » arrondie, détachée des bords (comme une carte), avec
+   la vidéo de l'épisode en fond. Bouton son en haut à droite ; pause et
+   flèches en bas à droite ; indicateurs centrés en bas.
    ========================================================================== */
 
 .hero {
   position: relative;
-  /* 26,2 vw = 438 px à 1672 px de large ; bornes pour garder le texte lisible. */
+  /* 26,2 vw ≈ 438 px à 1672 px de large ; bornes pour garder le texte lisible. */
   height: clamp(420px, 26.2vw, 600px);
+  margin: 20px var(--content-pad-right) 0 var(--content-pad-left);
   overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-hero);
   background-color: var(--color-bg-header);
+  box-shadow: var(--shadow-card);
   isolation: isolate;
+}
+
+/* Bouton son : en haut à droite de la bulle (diapositives vidéo). */
+.hero .sound {
+  position: absolute;
+  z-index: 3;
+  top: 20px;
+  right: 22px;
 }
 
 .viewport {
@@ -64,9 +74,11 @@
   background-color: rgb(var(--color-text-rgb) / 0.7);
 }
 
-/* Actif : terracotta + légèrement plus grand (indice non chromatique). */
+/* Actif : couleur d'action, anneau ivoire (contraste sur la vidéo) et
+   légèrement plus grand (indice non chromatique). */
 .dot[aria-current='true']::before {
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
+  box-shadow: 0 0 0 1.5px var(--color-text);
   transform: scale(1.12);
 }
 
@@ -77,8 +89,8 @@
 .controls {
   position: absolute;
   z-index: 3;
-  right: 38px;
-  bottom: 26px;
+  right: 22px;
+  bottom: 22px;
   display: flex;
   gap: 11px;
 }
@@ -118,7 +130,10 @@
     height: auto;
     margin: 16px var(--content-pad-right) 0 var(--content-pad-left);
     overflow: visible;
+    border: 0;
+    border-radius: 0;
     background: none;
+    box-shadow: none;
   }
 
   .viewport {
@@ -126,12 +141,17 @@
     inset: auto;
   }
 
-  /* Les flèches disparaissent ; seul le bouton pause reste, en haut à
-     droite de l'image (le badge occupe le coin gauche). */
+  /* Les flèches disparaissent ; le bouton pause reste en haut de l'image,
+     à gauche du bouton son (le badge occupe le coin gauche). */
   .controls {
     top: 14px;
-    right: 14px;
+    right: 62px;
     bottom: auto;
+  }
+
+  .hero .sound {
+    top: 14px;
+    right: 14px;
   }
 
   .controls .arrow {

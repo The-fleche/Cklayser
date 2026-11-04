@@ -303,7 +303,7 @@ legend.panelTitle + * {
 
 .chipOn {
   border-color: var(--color-gold);
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
   color: var(--color-text-on-accent);
 }
 
@@ -375,7 +375,7 @@ legend.panelTitle + * {
 
 .switch:checked {
   border-color: var(--color-gold);
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
 }
 
 .switch:checked::after {

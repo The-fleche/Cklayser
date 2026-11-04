@@ -42,8 +42,13 @@ app/
   page.tsx                accueil : hero + rangées
   studio/page.tsx         « Bientôt disponible » (CKlayser Studio)
   serie/[id]/page.tsx     page de visionnage (lecteur à points de vue) ou « Bientôt disponible »
-  [section]/page.tsx      Découvrir, Séries Exclusives, Fandoms, Chaînes, Profil, Adhésions, Paramètres
-  chaine/[id]/page.tsx    page chaîne « Bientôt disponible »
+  decouvrir/page.tsx      catalogue complet filtrable (?univers=…)
+  exclusives/page.tsx     séries réservées aux adhérents, épisodes en avance
+  chaines/page.tsx        toutes les chaînes (Suivre / Adhérer)
+  chaine/[id]/page.tsx    page d'une chaîne et ses séries
+  fandoms/page.tsx        communautés et discussions
+  fandoms/[id]/page.tsx   une discussion (réponses, j'aime)
+  [section]/page.tsx      « Bientôt disponible » : Mes adhésions, Paramètres
   profil/page.tsx         profil du membre (photo, nom, pseudo, préférences)
   ma-liste/page.tsx       séries enregistrées (session)
   not-found.tsx           404
@@ -55,10 +60,14 @@ components/
                           HomeSections, MyList
   watch/                  PovPlayer (lecteur vidéo à points de vue), EpisodeList
   profile/                ProfileEditor (page /profil)
+  catalog/                CatalogBrowser, ExclusivesView, ChannelsView, ChannelView, ChannelActions
+  forum/                  ForumHome, ThreadView, ForumAuthorLine, LikeButton
   ui/                     Button, IconButton, Badge, Avatar, KeyframeDiamond, ComingSoon, Toast
-data/mock.ts              séries, univers, chaînes, utilisateur, notifications, slides
+data/mock.ts              séries (16), univers, chaînes, adhésions, utilisateur, notifications, slides, épisodes
+data/forum.ts             membres fictifs, communautés, discussions et réponses
 lib/                      types.ts, catalog.ts (requêtes + formatage), app-state.tsx (contexte),
-                          profile.ts (validation, photo), hooks.ts, theme.ts
+                          profile.ts (validation, photo), forum.ts + forum-store.ts (forums),
+                          sidebar.ts (cookie), hooks.ts, theme.ts
 public/
   brand/logo.png          logo original (conversion PNG sans perte du fichier fourni)
   watch/echos-aelith/     épisode 1 : s1e1-pov1..3.mp4 ; épisode 2 : s1e2.mp4 ;
@@ -74,9 +83,10 @@ Pour le hero, le champ `focus` (`object-position`) règle le recadrage, notammen
 
 ### Vidéo dans le hero : extrait du dernier épisode
 
-La première diapositive joue automatiquement, en boucle et sans son, un extrait du **dernier épisode** de sa série. Le hero le retrouve tout seul : il prend le champ `teaser` du dernier épisode (`getLatestEpisode`), donc publier un épisode 3 avec un `teaser` suffit à changer la vidéo de l'accueil. « Regarder maintenant » mène à ce même épisode (`/serie/echos-aelith?episode=2`).
+La première diapositive joue automatiquement et en boucle un extrait du **dernier épisode** de sa série. Le hero le retrouve tout seul : il prend le champ `teaser` du dernier épisode (`getLatestEpisode`), donc publier un épisode 3 avec un `teaser` suffit à changer la vidéo de l'accueil. « Regarder maintenant » mène à ce même épisode (`/serie/echos-aelith?episode=2`).
 
-- `s1e2-extrait.mp4` : 6 s de l'épisode 2 (de 2,5 s à 8,5 s), sans piste audio. La dernière demi-seconde est fondue dans la première image, ce qui rend la boucle continue.
+- `s1e2-extrait.mp4` : 6 s de l'épisode 2 (de 2,5 s à 8,5 s), avec sa piste son. Elle est presque muette, comme celle de la vidéo fournie. La dernière demi-seconde de l'image et du son est fondue dans le début, ce qui rend la boucle continue.
+- La vidéo démarre muette (obligatoire pour la lecture automatique). Le bouton en haut à droite de la bulle active ou coupe le son.
 - L'affiche `s1e2-extrait-poster.webp` est montrée pendant le chargement et quand l'utilisateur a réduit les animations.
 - La vidéo ne joue que sur la diapositive active et repart du début à chaque retour. La diapositive reste affichée 12 s, soit deux passages, au lieu de 7.
 - Sur desktop et tablette, elle est cadrée à droite de la colonne de texte avec un fondu à gauche. Sur mobile, elle occupe le format 4:5.
@@ -135,8 +145,47 @@ Fonctionnement :
 
 Aucun serveur : c'est une démonstration. Pour brancher une API, remplacer `saveProfile` dans `lib/app-state.tsx`.
 
+## Sidebar rétractable
+
+Le bouton menu (☰), en haut de la sidebar, fonctionne comme sur YouTube :
+
+| Écran | Par défaut | Bouton menu |
+| --- | --- | --- |
+| Desktop (≥ 1280 px) | complète (252 px) | replie en rail de 76 px : icône au-dessus d'un libellé court, avatars des chaînes, icône Studio |
+| Tablette (768 → 1279 px) | rail | ouvre la sidebar complète par-dessus le contenu, avec un voile. Échap, un clic sur le voile ou un changement de page la referment |
+| Mobile | masquée | navigation inférieure |
+
+- Sur desktop, le choix est gardé un an dans le cookie `cklayser-sidebar`. Le serveur le lit et pose `data-sidebar` sur `<html>`, donc il n'y a pas de décalage au chargement.
+- Les composants internes ne dépendent pas de la largeur d'écran : ils s'adaptent à la largeur réelle de la sidebar grâce à une requête de conteneur (`@container sidebar (max-width: 120px)`). Le même rail sert donc en mode replié et sur tablette.
+- En rail, le libellé complet reste le nom accessible de chaque lien.
+
+## Catalogues et chaînes
+
+- **Découvrir** (`/decouvrir`) : les 16 séries du catalogue.
+  - Filtres combinables : recherche (titre, histoire, chaîne), univers, technique 2D ou 3D, 3D interactif, nouveautés.
+  - Tri : sélection, A → Z, nouveautés, nombre d'épisodes.
+  - L'univers choisi est reporté dans l'URL, et le nombre de résultats est annoncé aux lecteurs d'écran.
+- **Séries exclusives** (`/exclusives`) : avantages de l'adhésion, épisodes en avance, puis les exclusivités de chaque chaîne. Pour une chaîne dont on n'est pas adhérent, la carte indique « Réservé aux adhérents » et un bouton « Adhérer · prix/mois » est proposé.
+- **Chaînes** (`/chaines`, `/chaine/[id]`) : boutons Suivre et Adhérer.
+  - Les chaînes suivies s'affichent aussitôt dans la sidebar.
+  - Suivis et adhésions sont gardés dans le navigateur (`cklayser:chaines-suivies`, `cklayser:adhesions`). C'est une démonstration : aucun paiement.
+- Six séries ont été ajoutées pour remplir le catalogue. Leurs visuels SVG sont générés dans le même style que les autres.
+
+## Fandoms & Forums
+
+- `/fandoms` : six communautés par série (membres, en ligne) et huit discussions fictives.
+  - Les catégories sont : théories, épisodes, fan art, technique et questions.
+  - Les membres sont inventés, et les comptes officiels des chaînes portent le badge « Équipe ».
+  - On peut filtrer par communauté ou par catégorie, et trier par récence, « j'aime » ou nombre de réponses.
+- **Nouvelle discussion** : titre, communauté, catégorie et message. Une ligne vide sépare les paragraphes. Les champs sont validés et les erreurs sont reliées aux champs.
+- `/fandoms/[id]` : message, réponses (avec un liseré doré pour l'équipe), « j'aime » sur chaque message, formulaire de réponse et suppression de ses propres sujets.
+- Les contributions du membre (sujets, réponses, « j'aime ») sont gardées dans le navigateur (`cklayser:forum`). Les données fictives sont dans `data/forum.ts`. Les anciennetés y sont stockées en minutes, ce qui donne un affichage relatif identique côté serveur et côté navigateur.
+- En visiteur, publier, répondre ou aimer ouvre la création de compte.
+
 ## Design system
 
+- **Couleur d'action unique** : `--color-action` (`#924323`), c'est-à-dire la pastille active de la navigation. Elle est reprise par tous les boutons pleins et tous les états sélectionnés : bouton primaire (« Regarder maintenant », « Retour à l'accueil »…), bouton lecture du lecteur, point de vue actif, épisode en cours, pastilles de filtre, interrupteurs, badge « En avance » et indicateur actif du hero. Le survol utilise `--color-action-hover`, l'état pressé `--color-action-pressed`.
+- Hero en bulle : `--radius-hero: 24px`, marges latérales du contenu, contour fin et ombre.
 - Toutes les couleurs sont des variables de `app/globals.css`, regroupées par rôle : fonds, marque, accents relevés sur la capture, texte, badges, bordures lumineuses, ombres, typographie, layout, rayons, mouvement, z-index.
 - Aucune valeur HEX dans les composants. Seule exception : `lib/theme.ts`, car `<meta name="theme-color">` n'accepte pas de variable CSS.
 - Ratio des cartes : `--card-ratio: 16 / 10` (mesuré sur la capture). Passer à `16 / 9` ne demande qu'une ligne.
@@ -147,16 +196,17 @@ Aucun serveur : c'est une démonstration. Pour brancher une API, remplacer `save
 
 ## Accessibilité (WCAG 2.2 AA)
 
-- Boutons primaires : fond `#BE4D3D`, texte blanc (4,86:1), survol avec halo doré et 1 px d'élévation, état pressé `#A63E30`.
+- Boutons pleins : fond `#924323` avec texte blanc (6,9:1). Survol `#A24E2C` (5,7:1) avec halo doré, état pressé `#7D3A1E` (8,4:1).
 - Couleurs corrigées pour le contraste :
 
   | Élément | Capture | Ratio capture | Corrigé | Ratio corrigé |
   | --- | --- | --- | --- | --- |
-  | Bouton primaire | `#C9542D` | 4,38:1 | `#BE4D3D` | 4,86:1 |
-  | Badge « En avance » | `#C9572D` | 4,30:1 | `#BE4D3D` | 4,86:1 |
+  | Bouton primaire | `#C9542D` | 4,38:1 | `#924323` (couleur d'action) | 6,9:1 |
+  | Badge « En avance » | `#C9572D` | 4,30:1 | `#924323` | 6,9:1 |
   | Placeholder de recherche | `#87756B` | 3,7:1 | `#9A8A7F` | 4,9:1 |
 
 - Le voile du hero est calé en pixels sur la colonne de texte : 6,2:1 au minimum mesuré sur le rendu réel.
 - Focus doré de 2 px partout, navigation clavier complète.
-- Motifs ARIA : combobox (recherche), menu button (compte), carrousel (APG).
+- Motifs ARIA : combobox (recherche), menu button (compte), carrousel (APG), bouton de menu `aria-expanded` / `aria-controls` (sidebar).
+- Hero : bouton son (« Activer le son » / « Couper le son »). La vidéo démarre toujours muette, comme l'exigent les navigateurs pour la lecture automatique.
 - `inert` sur les slides masquées. Pastilles toujours doublées d'un texte accessible. `prefers-reduced-motion` respecté (pas d'autoplay). Aucun texte sous 12 px.

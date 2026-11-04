@@ -20,6 +20,9 @@
  *  - toast         dernier message annoncé (affiché + lu par les lecteurs d'écran).
  *  - profile       profil du membre (nom, pseudo, photo…), modifiable sur
  *                  /profil et conservé dans ce navigateur (localStorage).
+ *  - followedChannels  chaînes suivies (sidebar, /chaines), localStorage.
+ *  - memberships   chaînes dont le membre est adhérent (accès aux
+ *                  exclusivités), localStorage. Démonstration : aucun paiement.
  */
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -32,8 +35,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { currentUser, initialUnreadNotificationIds } from '@/data/mock';
-import { getSeries } from '@/lib/catalog';
+import { currentUser, followedChannelIds, initialMembershipIds, initialUnreadNotificationIds } from '@/data/mock';
+import { getChannel, getSeries } from '@/lib/catalog';
 import { restoreProfile } from '@/lib/profile';
 import type { UserProfile, ViewerState } from '@/lib/types';
 
@@ -73,6 +76,14 @@ interface AppStateValue {
   announce: (message: string) => void;
   dismissToast: () => void;
 
+  followedChannels: readonly string[];
+  isFollowing: (channelId: string) => boolean;
+  toggleFollow: (channelId: string) => void;
+
+  memberships: readonly string[];
+  isMemberOf: (channelId: string) => boolean;
+  toggleMembership: (channelId: string) => void;
+
   profile: UserProfile;
   /** Enregistre le profil (déjà validé) ; renvoie false si le stockage a échoué. */
   saveProfile: (next: UserProfile) => boolean;
@@ -85,6 +96,26 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 const FAVORITES_STORAGE_KEY = 'cklayser:ma-liste';
 /** Clé de stockage du profil (conservé d'une visite à l'autre). */
 const PROFILE_STORAGE_KEY = 'cklayser:profil';
+const FOLLOW_STORAGE_KEY = 'cklayser:chaines-suivies';
+const MEMBERSHIP_STORAGE_KEY = 'cklayser:adhesions';
+
+/** Lit une liste d'identifiants stockée (données non fiables). */
+function readIdList(key: string): string[] | null {
+  try {
+    const parsed: unknown = JSON.parse(window.localStorage.getItem(key) ?? 'null');
+    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeIdList(key: string, list: string[]) {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(list));
+  } catch {
+    // Stockage indisponible : la liste reste en mémoire pour cette visite.
+  }
+}
 
 /** Lit ?state= et ne retient que les deux valeurs reconnues. */
 function parseViewer(value: string | null): ViewerState | null {
@@ -227,6 +258,56 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [announce, favorites, openAuthDialog, viewer],
   );
 
+  /* ----- Chaînes suivies et adhésions ---------------------------------------- */
+  const [followedChannels, setFollowedChannels] = useState<string[]>(followedChannelIds);
+  const [memberships, setMemberships] = useState<string[]>(initialMembershipIds);
+
+  useEffect(() => {
+    const follows = readIdList(FOLLOW_STORAGE_KEY);
+    if (follows) setFollowedChannels(follows);
+    const joined = readIdList(MEMBERSHIP_STORAGE_KEY);
+    if (joined) setMemberships(joined);
+  }, []);
+
+  const isFollowing = useCallback((id: string) => followedChannels.includes(id), [followedChannels]);
+  const isMemberOf = useCallback((id: string) => memberships.includes(id), [memberships]);
+
+  const toggleFollow = useCallback(
+    (channelId: string) => {
+      const name = getChannel(channelId)?.name ?? 'la chaîne';
+      if (viewer === 'guest') {
+        openAuthDialog('signup', `Créez un compte gratuit pour suivre ${name}.`);
+        return;
+      }
+      const following = followedChannels.includes(channelId);
+      const next = following ? followedChannels.filter((id) => id !== channelId) : [...followedChannels, channelId];
+      setFollowedChannels(next);
+      writeIdList(FOLLOW_STORAGE_KEY, next);
+      announce(following ? `Vous ne suivez plus ${name}.` : `Vous suivez ${name}.`);
+    },
+    [announce, followedChannels, openAuthDialog, viewer],
+  );
+
+  const toggleMembership = useCallback(
+    (channelId: string) => {
+      const name = getChannel(channelId)?.name ?? 'la chaîne';
+      if (viewer === 'guest') {
+        openAuthDialog('signup', `Créez un compte pour adhérer à ${name} et débloquer ses exclusivités.`);
+        return;
+      }
+      const joined = memberships.includes(channelId);
+      const next = joined ? memberships.filter((id) => id !== channelId) : [...memberships, channelId];
+      setMemberships(next);
+      writeIdList(MEMBERSHIP_STORAGE_KEY, next);
+      announce(
+        joined
+          ? `Adhésion à ${name} résiliée (démonstration).`
+          : `Bienvenue parmi les adhérents de ${name} ! Ses exclusivités sont débloquées (démonstration, aucun paiement).`,
+      );
+    },
+    [announce, memberships, openAuthDialog, viewer],
+  );
+
   /* ----- Notifications ----------------------------------------------------- */
   const [unreadIds, setUnreadIds] = useState<string[]>(initialUnreadNotificationIds);
   const markAllNotificationsRead = useCallback(() => setUnreadIds([]), []);
@@ -254,6 +335,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       toast,
       announce,
       dismissToast,
+      followedChannels,
+      isFollowing,
+      toggleFollow,
+      memberships,
+      isMemberOf,
+      toggleMembership,
       profile,
       saveProfile,
       resetProfile,
@@ -275,6 +362,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       toast,
       announce,
       dismissToast,
+      followedChannels,
+      isFollowing,
+      toggleFollow,
+      memberships,
+      isMemberOf,
+      toggleMembership,
       profile,
       saveProfile,
       resetProfile,

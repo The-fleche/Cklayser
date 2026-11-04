@@ -49,7 +49,7 @@
   width: 76px;
   height: 76px;
   border-radius: 50%;
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
   color: var(--color-text-on-accent);
   box-shadow: var(--shadow-control);
   transform: translate(-50%, -50%);
@@ -59,6 +59,7 @@
 }
 
 .bigPlay:hover {
+  background-color: var(--color-action-hover);
   transform: translate(-50%, -50%) scale(1.05);
   box-shadow: var(--glow-gold-soft);
 }
@@ -219,12 +220,12 @@
   background-color: rgb(var(--color-gold-rgb) / 0.07);
 }
 
-/* Point de vue actif : fond terracotta + contour doré (pas seulement une
+/* Point de vue actif : fond couleur d’action + contour doré (pas seulement une
    couleur : le contour change aussi d'épaisseur). */
 .pov[aria-pressed='true'] {
   border-color: var(--color-gold);
   box-shadow: inset 0 0 0 1px var(--color-gold);
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
   color: var(--color-text-on-accent);
 }
 

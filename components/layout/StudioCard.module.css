@@ -67,9 +67,9 @@
 }
 
 /* ==========================================================================
-   Tablette : icône seule (48 × 48) + infobulle
+   Sidebar en rail (repliée, ou tablette) : icône seule (48 × 48) + infobulle
    ========================================================================== */
-@media (max-width: 1279px) {
+@container sidebar (max-width: 120px) {
   .card {
     position: relative;
     justify-content: center;

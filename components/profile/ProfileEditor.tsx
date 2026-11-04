@@ -24,7 +24,7 @@
 import { Bell, Camera, Check, RotateCcw, Trash2, Undo2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import { followedChannelIds, universes } from '@/data/mock';
+import { universes } from '@/data/mock';
 import { useAppState } from '@/lib/app-state';
 import {
   BIO_MAX,
@@ -51,7 +51,7 @@ function sameProfile(a: UserProfile, b: UserProfile): boolean {
 }
 
 export default function ProfileEditor() {
-  const { isMember, openAuthDialog, profile, saveProfile, resetProfile, announce, favorites } = useAppState();
+  const { isMember, openAuthDialog, profile, saveProfile, resetProfile, announce, favorites, followedChannels } = useAppState();
   const [draft, setDraft] = useState<UserProfile>(profile);
   const [errors, setErrors] = useState<ProfileErrors>({});
   const [photoError, setPhotoError] = useState('');
@@ -277,7 +277,9 @@ export default function ProfileEditor() {
             </div>
             <div>
               <dt>Chaînes suivies</dt>
-              <dd>{followedChannelIds.length}</dd>
+              <dd>
+                <Link href="/chaines">{followedChannels.length}</Link>
+              </dd>
             </div>
           </dl>
         </section>

@@ -25,6 +25,21 @@ export function getLatestEpisode(seriesId: string): Episode | undefined {
   return getEpisodes(seriesId).at(-1);
 }
 
+/** Toutes les séries du catalogue. */
+export function getAllSeries(): Series[] {
+  return series;
+}
+
+/** Séries publiées par une chaîne. */
+export function getSeriesByChannel(channelId: string): Series[] {
+  return series.filter((item) => item.channelId === channelId);
+}
+
+/** Toutes les chaînes. */
+export function getAllChannels(): Channel[] {
+  return channels;
+}
+
 /** Retrouve une série par son identifiant. */
 export function getSeries(id: string): Series | undefined {
   return series.find((item) => item.id === id);

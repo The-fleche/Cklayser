@@ -16,15 +16,15 @@
  */
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { followedChannelIds, popularChannelIds } from '@/data/mock';
+import { popularChannelIds } from '@/data/mock';
 import { useAppState } from '@/lib/app-state';
 import { formatSubscribers, getChannelList, META_SEPARATOR } from '@/lib/catalog';
 import Avatar from '@/components/ui/Avatar';
 import styles from './FollowedChannels.module.css';
 
 export default function FollowedChannels() {
-  const { isMember } = useAppState();
-  const list = getChannelList(isMember ? followedChannelIds : popularChannelIds);
+  const { isMember, followedChannels } = useAppState();
+  const list = getChannelList(isMember ? followedChannels : popularChannelIds);
   const title = isMember ? 'Chaînes suivies' : 'Chaînes populaires';
 
   return (
@@ -39,6 +39,12 @@ export default function FollowedChannels() {
           <ChevronRight size={15} strokeWidth={2.25} aria-hidden="true" className={styles.chevron} />
         </Link>
       </div>
+
+      {list.length === 0 ? (
+        <p className={styles.empty}>
+          Aucune chaîne suivie. <Link href="/chaines">Découvrir les chaînes</Link>
+        </p>
+      ) : null}
 
       <ul className={styles.list}>
         {list.map((channel) => (

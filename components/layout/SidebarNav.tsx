@@ -13,8 +13,8 @@
  *            (aria-current="page") ;
  *  - survol  fond légèrement plus clair, transition douce ;
  *  - focus   anneau doré ;
- *  - tablette (76 px) : icônes seules, libellé affiché en infobulle au survol
- *    et au focus (le libellé reste le nom accessible du lien).
+ *  - rail (sidebar repliée ou tablette) : icône au-dessus du libellé court,
+ *    comme YouTube. Le libellé complet reste le nom accessible du lien.
  * La pastille de « Séries Exclusives » porte un texte accessible.
  */
 import Link from 'next/link';
@@ -28,7 +28,7 @@ export default function SidebarNav() {
   return (
     <nav aria-label="Navigation principale" className={styles.nav}>
       <ul className={styles.list}>
-        {NAV_ITEMS.map(({ href, label, icon: Icon, hasNews }) => {
+        {NAV_ITEMS.map(({ href, label, shortLabel, icon: Icon, hasNews }) => {
           const active = isNavItemActive(href, pathname);
           return (
             <li key={href}>
@@ -44,6 +44,11 @@ export default function SidebarNav() {
                   className={`${styles.icon} ${href === '/' ? styles.iconHouse : ''}`}
                 />
                 <span className={styles.label}>{label}</span>
+                {/* Libellé court du rail, masqué pour les lecteurs d'écran
+                    (le nom accessible reste le libellé complet). */}
+                <span className={styles.shortLabel} aria-hidden="true">
+                  {shortLabel}
+                </span>
                 {hasNews ? (
                   <span className={styles.newsDot}>
                     <span className="sr-only">, nouveautés disponibles</span>

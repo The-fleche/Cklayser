@@ -150,3 +150,48 @@ export interface Episode {
    *  quand l'épisode est le dernier de sa série. */
   teaser?: { src: string; poster: string };
 }
+
+/* --------------------------------------------------------------------------
+   Fandoms & Forums
+   -------------------------------------------------------------------------- */
+export type ForumTag = 'theories' | 'episode' | 'fanart' | 'technique' | 'questions';
+
+export interface ForumAuthor {
+  id: string;
+  name: string;
+  handle: string;
+  /** Compte officiel d'une chaîne (badge « Équipe »). */
+  channelId?: string;
+  avatar?: string;
+}
+
+export interface ForumReply {
+  id: string;
+  authorId: string;
+  /** Ancienneté en minutes (affichage relatif stable). */
+  ageMinutes: number;
+  likes: number;
+  body: string;
+}
+
+export interface ForumThread {
+  id: string;
+  title: string;
+  /** Série concernée ; absente pour une discussion générale. */
+  seriesId?: string;
+  tag: ForumTag;
+  authorId: string;
+  ageMinutes: number;
+  likes: number;
+  pinned?: boolean;
+  /** Paragraphes du message d'ouverture. */
+  body: string[];
+  replies: ForumReply[];
+}
+
+/** Communauté d'une série. */
+export interface Fandom {
+  seriesId: string;
+  members: number;
+  online: number;
+}

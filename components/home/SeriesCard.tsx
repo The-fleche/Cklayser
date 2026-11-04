@@ -26,7 +26,7 @@
 import { Bookmark } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useId } from 'react';
+import { useId, type ReactNode } from 'react';
 import { useAppState } from '@/lib/app-state';
 import { formatSeriesMeta, getPrimaryBadge } from '@/lib/catalog';
 import type { Series } from '@/lib/types';
@@ -36,6 +36,8 @@ import styles from './SeriesCard.module.css';
 interface SeriesCardProps {
   series: Series;
   meta?: string;
+  /** Icône placée avant la ligne meta (ex. : cadenas « Réservé aux adhérents »). */
+  metaIcon?: ReactNode;
   progress?: number;
   progressLabel?: string;
   sizes?: string;
@@ -44,6 +46,7 @@ interface SeriesCardProps {
 export default function SeriesCard({
   series,
   meta,
+  metaIcon,
   progress,
   progressLabel,
   sizes = '(max-width: 767px) 75vw, (max-width: 1279px) 32vw, 24vw',
@@ -69,7 +72,10 @@ export default function SeriesCard({
             {series.title}
           </Link>
         </h3>
-        <p className={styles.meta}>{meta ?? formatSeriesMeta(series)}</p>
+        <p className={styles.meta}>
+          {metaIcon ? <span className={styles.metaIcon}>{metaIcon}</span> : null}
+          {meta ?? formatSeriesMeta(series)}
+        </p>
       </div>
 
       <button

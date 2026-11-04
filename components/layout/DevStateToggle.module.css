@@ -37,7 +37,7 @@
 }
 
 .option[aria-pressed='true'] {
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
   color: var(--color-text-on-accent);
 }
 

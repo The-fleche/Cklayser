@@ -46,6 +46,16 @@ export const channels: Channel[] = [
 /** Chaînes suivies par le membre connecté (état par défaut, comme sur la capture). */
 export const followedChannelIds = ['atelier-claybot', 'spine-craft-2d'];
 
+/** Chaînes dont le membre est adhérent au départ (« Membre · 2 adhésions »). */
+export const initialMembershipIds = ['studio-lanterne', 'spine-craft-2d'];
+
+/** Prix mensuel fictif d'une adhésion, par chaîne. */
+export const membershipPrices: Record<string, string> = {
+  'atelier-claybot': '4,99 €',
+  'spine-craft-2d': '3,99 €',
+  'studio-lanterne': '5,99 €',
+};
+
 /** Chaînes mises en avant pour un visiteur (« CHAÎNES POPULAIRES »). */
 export const popularChannelIds = ['studio-lanterne', 'atelier-claybot'];
 
@@ -220,6 +230,108 @@ export const series: Series[] = [
     channelId: 'spine-craft-2d',
     image: '/series/veilleurs-de-sel.svg',
     imageAlt: 'De minuscules silhouettes sur un désert de sel rose qui reflète le ciel.',
+  },
+  {
+    id: 'archipel-des-lucioles',
+    title: 'L’Archipel des Lucioles',
+    synopsis:
+      'Chaque nuit, les îles flottantes s’éclairent de milliers de lucioles. Une gardienne doit comprendre pourquoi elles s’éteignent une à une.',
+    season: 1,
+    episodeCount: 8,
+    format: '3D',
+    interactive3d: true,
+    exclusive: false,
+    early: false,
+    isNew: true,
+    universe: 'fantastique',
+    channelId: 'studio-lanterne',
+    image: '/series/archipel-des-lucioles.svg',
+    imageAlt: 'Îles flottantes plantées d’arbres, entourées de lucioles dans un ciel nocturne violet.',
+  },
+  {
+    id: 'derniere-orbite',
+    title: 'La Dernière Orbite',
+    synopsis:
+      'À bord d’une station en forme d’engrenage, l’équipage découvre que la planète qu’il protège n’est plus là où elle devrait être.',
+    season: 2,
+    episodeCount: 6,
+    format: '3D',
+    interactive3d: true,
+    exclusive: true,
+    early: false,
+    isNew: false,
+    universe: 'science-fiction',
+    channelId: 'atelier-claybot',
+    image: '/series/derniere-orbite.svg',
+    imageAlt: 'Une station orbitale cuivrée en forme d’engrenage au-dessus d’une planète bleue.',
+  },
+  {
+    id: 'cartographe-des-dunes',
+    title: 'Le Cartographe des Dunes',
+    synopsis:
+      'Les dunes se déplacent chaque nuit. Un jeune cartographe redessine le désert pour retrouver la caravane de sa famille.',
+    season: 1,
+    episodeCount: 10,
+    format: '2D',
+    interactive3d: false,
+    exclusive: true,
+    early: true,
+    isNew: false,
+    universe: 'aventure',
+    channelId: 'spine-craft-2d',
+    image: '/series/cartographe-des-dunes.svg',
+    imageAlt: 'Une silhouette brandit une carte au sommet d’une dune, sous un grand soleil pâle.',
+  },
+  {
+    id: 'nuit-des-lanternes',
+    title: 'La Nuit des Lanternes',
+    synopsis:
+      'Une fois par an, la ville lâche ses lanternes dans le ciel. Cette année, l’une d’elles est revenue avec un message.',
+    season: 1,
+    episodeCount: 7,
+    format: '2D',
+    interactive3d: false,
+    exclusive: true,
+    early: false,
+    isNew: true,
+    universe: 'fantasy',
+    channelId: 'studio-lanterne',
+    image: '/series/nuit-des-lanternes.svg',
+    imageAlt: 'Des dizaines de lanternes dorées s’élèvent au-dessus d’une ville de tours au crépuscule.',
+  },
+  {
+    id: 'murmures-du-glacier',
+    title: 'Les Murmures du Glacier',
+    synopsis:
+      'Sous les aurores, le glacier chuchote des noms. Une expédition part vérifier si les disparus y sont vraiment endormis.',
+    season: 1,
+    episodeCount: 9,
+    format: '3D',
+    interactive3d: false,
+    exclusive: false,
+    early: true,
+    isNew: false,
+    universe: 'mystere',
+    channelId: 'atelier-claybot',
+    image: '/series/murmures-du-glacier.svg',
+    imageAlt: 'Une silhouette sur un lac gelé, face à des montagnes de glace sous des aurores boréales.',
+  },
+  {
+    id: 'brindille-et-caillou',
+    title: 'Brindille & Caillou',
+    synopsis:
+      'Un caillou qui ne bouge jamais et une brindille qui ne tient pas en place font le tour de la prairie. Pour toute la famille.',
+    season: 3,
+    episodeCount: 26,
+    format: '2D',
+    interactive3d: false,
+    exclusive: false,
+    early: false,
+    isNew: true,
+    universe: 'aventure',
+    channelId: 'spine-craft-2d',
+    image: '/series/brindille-et-caillou.svg',
+    imageAlt: 'Un caillou gris et une brindille souriants dans une prairie, à côté d’un chat roux.',
   },
 ];
 

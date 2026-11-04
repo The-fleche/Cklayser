@@ -4,6 +4,13 @@
   min-height: 100vh;
   min-height: 100dvh;
   margin-left: var(--sidebar-width);
+  transition: margin-left var(--duration-base) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column {
+    transition: none;
+  }
 }
 
 .main {

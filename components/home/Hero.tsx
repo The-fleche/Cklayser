@@ -17,6 +17,9 @@
  *    en boucle ; lecture seulement sur la diapositive active, arrêtée par
  *    le bouton pause, l'onglet masqué ou le mouvement réduit ;
  *  - « Regarder maintenant » mène à ce dernier épisode ;
+ *  - bouton son en haut à droite (diapositive vidéo) : la vidéo démarre
+ *    muette (exigence des navigateurs pour la lecture automatique) ; le
+ *    bouton active ou coupe le son, et ce choix vaut pour toute la visite ;
  *  - pause au survol et au focus clavier ; bouton pause/lecture accessible
  *    au clavier (visible dès qu'il reçoit le focus, et en permanence sur
  *    une diapositive vidéo : WCAG 2.2.2) ;
@@ -25,7 +28,7 @@
  *  - aucun défilement automatique si prefers-reduced-motion est actif ;
  *  - pause quand l'onglet est masqué.
  */
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type TouchEvent } from 'react';
 import { heroSlides } from '@/data/mock';
 import { getLatestEpisode, getSeries } from '@/lib/catalog';
@@ -68,6 +71,7 @@ export default function Hero() {
   const [keyboardFocus, setKeyboardFocus] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
   const [pageHidden, setPageHidden] = useState(false);
+  const [muted, setMuted] = useState(true);
   const reducedMotion = usePrefersReducedMotion();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -163,9 +167,22 @@ export default function Hero() {
             total={total}
             preload={slideIndex === 0}
             playing={slideIndex === index && videoPlaying}
+            muted={muted || slideIndex !== index}
           />
         ))}
       </div>
+
+      {currentHasVideo && !reducedMotion ? (
+        <IconButton
+          label={muted ? 'Activer le son' : 'Couper le son'}
+          variant="dark"
+          size={40}
+          className={styles.sound}
+          onClick={() => setMuted((value) => !value)}
+        >
+          {muted ? <VolumeX size={20} strokeWidth={2} /> : <Volume2 size={20} strokeWidth={2} />}
+        </IconButton>
+      ) : null}
 
       {total > 1 ? (
         <>

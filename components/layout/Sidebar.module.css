@@ -12,6 +12,7 @@
   flex-direction: column;
   width: var(--sidebar-width);
   background-color: var(--color-bg-sidebar);
+  transition: width var(--duration-base) var(--ease-out);
   /* Défilement interne seulement si la fenêtre est très basse. */
   overflow-x: hidden;
   overflow-y: auto;
@@ -41,7 +42,9 @@
   z-index: 2;
 }
 
-/* Contenu au-dessus du décor (z-index 1 > décor 0). */
+/* Contenu au-dessus du décor (z-index 1 > décor 0).
+   Conteneur « sidebar » : les composants internes passent en rail dès que
+   la sidebar fait moins de 120 px (repliée sur desktop, ou tablette). */
 .content {
   position: relative;
   z-index: var(--z-content);
@@ -49,20 +52,42 @@
   flex-direction: column;
   flex-shrink: 0;
   padding-bottom: 11px;
+  container-type: inline-size;
+  container-name: sidebar;
 }
 
-/* ----- Logo : 208 px de large (ratio d'origine 2,04), centré sur la zone
-   occupée par le logo de la capture (x 30 → 210, y 27 → 102). ---------- */
+/* ----- Bouton menu + logo ------------------------------------------------ */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 23px 12px;
+}
+
+.burger {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--color-icon);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.burger:hover {
+  background-color: var(--color-nav-hover);
+}
+
+/* Logo : 176 px de large, ratio d'origine (2,04) conservé. */
 .logoLink {
   display: block;
-  align-self: flex-start;
-  margin: 14px 0 23px 16px;
   border-radius: 8px;
 }
 
 .logo {
   display: block;
-  width: 208px;
+  width: 176px;
   height: auto; /* ratio d'origine conservé */
 }
 
@@ -86,21 +111,13 @@
 }
 
 /* ==========================================================================
-   Tablette : 76 px, icônes seules. Le débordement doit rester visible pour
-   que les infobulles puissent sortir de la colonne.
+   Rail (76 px) : bouton menu au-dessus d'un petit logo, puis icônes.
    ========================================================================== */
-@media (max-width: 1279px) {
-  .sidebar {
-    overflow: visible;
-  }
-
-  .content {
-    align-items: center;
-  }
-
-  .logoLink {
-    align-self: center;
-    margin: 18px 0 22px;
+@container sidebar (max-width: 120px) {
+  .top {
+    flex-direction: column;
+    gap: 10px;
+    margin: 12px 0 18px;
   }
 
   .logo {
@@ -114,6 +131,46 @@
 
   .studio {
     margin-top: 20px;
+  }
+}
+
+/* En rail, le débordement reste visible pour les infobulles des chaînes
+   et du Studio. */
+@media (min-width: 1280px) {
+  :global(html[data-sidebar='collapsed']) .sidebar {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .sidebar:not(.drawer) {
+    overflow: visible;
+  }
+
+  /* Tiroir : sidebar complète par-dessus le contenu. */
+  .drawer {
+    width: 252px;
+    z-index: var(--z-overlay);
+    box-shadow: 12px 0 40px rgb(var(--color-overlay-rgb) / 0.6);
+  }
+
+  .drawer::after {
+    display: none;
+  }
+}
+
+/* Voile derrière le tiroir (clic : fermeture). */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-overlay) - 1);
+  background-color: rgb(var(--color-overlay-rgb) / 0.55);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
   }
 }
 

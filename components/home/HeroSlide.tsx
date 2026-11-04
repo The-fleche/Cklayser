@@ -16,6 +16,7 @@
  *  - playing   la vidéo de fond (si la diapositive en a une) doit jouer :
  *              diapositive active, sans pause ni mouvement réduit
  *  - watchHref lien « Regarder maintenant » (dernier épisode de la série)
+ *  - muted     son de la vidéo coupé (true par défaut : lecture automatique)
  *
  * Vidéo : l'affiche (slide.image) est rendue par next/image en dessous ;
  * la vidéo, muette, sans contrôles et en boucle, apparaît en fondu une fois
@@ -45,6 +46,7 @@ interface HeroSlideProps {
   preload?: boolean;
   watchHref?: string;
   playing?: boolean;
+  muted?: boolean;
 }
 
 export default function HeroSlide({
@@ -56,6 +58,7 @@ export default function HeroSlide({
   preload = false,
   watchHref,
   playing = false,
+  muted = true,
 }: HeroSlideProps) {
   const { isMember, isFavorite, toggleFavorite } = useAppState();
   const badge = getPrimaryBadge(series);
@@ -68,6 +71,13 @@ export default function HeroSlide({
     const video = videoRef.current;
     if (video && active) video.currentTime = 0;
   }, [active]);
+
+  // Son piloté par le bouton du hero (propriété DOM : l'attribut « muted »
+  // de React ne suit pas les changements après le premier rendu).
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) video.muted = muted;
+  }, [muted]);
 
   // Lecture / pause pilotées par le carrousel. Un refus de lecture
   // automatique par le navigateur laisse simplement l'affiche visible.

@@ -61,9 +61,9 @@
   width: 100%;
 }
 
-/* ----- Primaire : terracotta (--color-terracotta) + blanc (contraste 4,86:1) ---------- */
+/* ----- Primaire : couleur d'action (celle de la nav active) + blanc (6,9:1) ---------- */
 .primary {
-  background-color: var(--color-terracotta);
+  background-color: var(--color-action);
   color: var(--color-text-on-accent);
   /* Léger relief : lumière en haut, ombre portée chaude. */
   box-shadow:
@@ -72,8 +72,9 @@
 }
 
 .primary:hover {
-  /* Même fond (contraste préservé) : seul un halo doré discret apparaît. */
+  /* Fond éclairci (5,7:1 avec le blanc) + halo doré discret. */
   transform: translateY(-1px);
+  background-color: var(--color-action-hover);
   box-shadow:
     inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.22),
     var(--glow-gold-soft);
@@ -81,7 +82,7 @@
 
 .primary:active {
   transform: translateY(0);
-  background-color: var(--color-terracotta-pressed);
+  background-color: var(--color-action-pressed);
   box-shadow: inset 0 1px 0 rgb(var(--color-gold-rgb) / 0.12);
 }
 

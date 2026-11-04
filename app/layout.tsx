@@ -12,6 +12,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, JetBrains_Mono, Manrope } from 'next/font/google';
+import { cookies } from 'next/headers';
 import { connection } from 'next/server';
 import type { ReactNode } from 'react';
 import AuthDialog from '@/components/layout/AuthDialog';
@@ -21,6 +22,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
 import Toast from '@/components/ui/Toast';
 import { AppStateProvider } from '@/lib/app-state';
+import { SIDEBAR_COOKIE, isSidebarCollapsed } from '@/lib/sidebar';
 import { THEME_COLOR_HEADER } from '@/lib/theme';
 import styles from './layout.module.css';
 
@@ -64,15 +66,22 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await connection();
+  // Préférence de la sidebar (complète / repliée), appliquée dès le rendu
+  // serveur pour éviter tout décalage à l'hydratation.
+  const sidebarCollapsed = isSidebarCollapsed((await cookies()).get(SIDEBAR_COOKIE)?.value);
 
   return (
-    <html lang="fr" className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="fr"
+      className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}
+      data-sidebar={sidebarCollapsed ? 'collapsed' : 'expanded'}
+    >
       <body>
         <AppStateProvider>
           <a href="#contenu" className="skip-link">
             Aller au contenu
           </a>
-          <Sidebar />
+          <Sidebar initialCollapsed={sidebarCollapsed} />
           <div className={styles.column}>
             <Topbar />
             <main id="contenu" tabIndex={-1} className={styles.main}>

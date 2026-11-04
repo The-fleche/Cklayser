@@ -1,0 +1,400 @@
+/* ==========================================================================
+   Pages de catalogue (Découvrir, Séries exclusives, Chaînes, Fandoms) :
+   en-tête de page, barres de filtres, grilles de cartes.
+   ========================================================================== */
+
+.page {
+  padding: 36px var(--content-pad-right) 56px calc(var(--content-pad-left) + var(--title-indent));
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: 10px;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 680px;
+  margin-top: 12px;
+  color: var(--color-text-soft);
+  font-size: var(--text-lg);
+  line-height: 1.6;
+}
+
+/* ----- Sections ----------------------------------------------------------- */
+.section {
+  margin-top: 40px;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.sectionTitle {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.875rem);
+  font-weight: 600;
+}
+
+.sectionText {
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ----- Grille de cartes ----------------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--card-gap);
+  margin-top: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.count {
+  margin-top: 20px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.empty {
+  margin-top: 24px;
+  padding: 28px;
+  border: 1px dashed var(--border-control);
+  border-radius: var(--radius-panel);
+  color: var(--color-text-soft);
+  text-align: center;
+}
+
+.empty p + * {
+  margin-top: 14px;
+}
+
+/* ----- Barre de filtres ------------------------------------------------------ */
+.toolbar {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background-color: var(--color-surface);
+}
+
+.toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  color: var(--color-text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.input,
+.select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-control);
+  border-radius: 12px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-base);
+}
+
+.input {
+  padding-left: 42px;
+}
+
+.input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.input:hover,
+.select:hover {
+  border-color: rgb(var(--color-gold-rgb) / 0.45);
+}
+
+.selectLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-label);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.select {
+  width: auto;
+  min-width: 170px;
+  cursor: pointer;
+}
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filterLegend {
+  float: left;
+  margin-right: 6px;
+  padding: 0;
+  color: var(--color-text-label);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* Pastille de filtre : case ou bouton radio natif, masqué visuellement ;
+   l'anneau de focus est reporté sur la pastille. */
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.chip:hover {
+  border-color: rgb(var(--color-gold-rgb) / 0.55);
+}
+
+.chip:has(input:checked) {
+  border-color: var(--color-gold);
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+}
+
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.chip input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.reset {
+  margin-left: auto;
+  color: var(--color-link);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reset:hover {
+  color: var(--color-link-hover);
+}
+
+/* ----- Bloc chaîne (Séries exclusives, Chaînes) --------------------------- */
+.channelCard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background-color: var(--color-surface);
+}
+
+.channelInfo {
+  display: flex;
+  flex: 1 1 260px;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.channelName {
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.channelName a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.channelName a:hover {
+  text-decoration: underline;
+}
+
+.channelMeta {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.channelActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.memberTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-gold);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+/* En-tête de la page d'une chaîne. */
+.channelHeader {
+  margin-top: 14px;
+}
+
+.titleFlush {
+  margin-top: 0;
+}
+
+/* Grille des chaînes (page Chaînes). */
+.channelGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.channelGrid .channelCard {
+  height: 100%;
+}
+
+.channelSeries {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.channelThumb {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.channelThumb img {
+  object-fit: cover;
+}
+
+/* ----- Bannière d'avantages (Séries exclusives) ---------------------------- */
+.perks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.perk {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background-color: var(--color-surface);
+  color: var(--color-text-soft);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.perk strong {
+  display: block;
+  color: var(--color-text);
+  font-size: var(--text-base);
+}
+
+.perkIcon {
+  flex-shrink: 0;
+  color: var(--color-gold);
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding-top: 24px;
+  }
+
+  .toolbar {
+    padding: 14px;
+  }
+
+  .select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .selectLabel {
+    width: 100%;
+  }
+
+  .reset {
+    margin-left: 0;
+  }
+
+  .channelGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

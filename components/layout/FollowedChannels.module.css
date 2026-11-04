@@ -102,6 +102,18 @@
   text-overflow: ellipsis;
 }
 
+/* Aucune chaîne suivie. */
+.empty {
+  padding: 0 4px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.empty a {
+  color: var(--color-link);
+}
+
 /* Chiffres tabulaires pour les compteurs. */
 .count {
   font-variant-numeric: tabular-nums;
@@ -112,9 +124,9 @@
 }
 
 /* ==========================================================================
-   Tablette : avatars seuls, nom en infobulle
+   Sidebar en rail (repliée, ou tablette) : avatars seuls, nom en infobulle
    ========================================================================== */
-@media (max-width: 1279px) {
+@container sidebar (max-width: 120px) {
   .channels {
     padding: 0;
     display: flex;
@@ -124,6 +136,10 @@
 
   .header {
     margin: 0 0 14px;
+  }
+
+  .empty {
+    display: none;
   }
 
   /* Le titre et « Voir tout » restent lisibles par les lecteurs d'écran. */
