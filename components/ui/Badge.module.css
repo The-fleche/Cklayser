@@ -47,8 +47,8 @@
   box-shadow: 0 4px 14px -6px rgb(var(--color-veil-rgb) / 0.9);
 }
 
-/* Exclusif : doré clair, texte brun très sombre. L'icône est un disque
-   sombre plein dont le triangle reprend la couleur du badge. */
+/* Exclusif : couleur d’action (nav active), texte blanc. L'icône est un disque
+   blanc plein dont le triangle reprend la couleur du badge. */
 .exclusive {
   background-color: var(--badge-exclusive-bg);
   color: var(--badge-exclusive-fg);

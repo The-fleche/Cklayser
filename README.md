@@ -184,7 +184,7 @@ Le bouton menu (☰), en haut de la sidebar, fonctionne comme sur YouTube :
 
 ## Design system
 
-- **Couleur d'action unique** : `--color-action` (`#924323`), c'est-à-dire la pastille active de la navigation. Elle est reprise par tous les boutons pleins et tous les états sélectionnés : bouton primaire (« Regarder maintenant », « Retour à l'accueil »…), bouton lecture du lecteur, point de vue actif, épisode en cours, pastilles de filtre, interrupteurs, badge « En avance » et indicateur actif du hero. Le survol utilise `--color-action-hover`, l'état pressé `--color-action-pressed`.
+- **Couleur d'action unique** : `--color-action` (`#924323`), c'est-à-dire la pastille active de la navigation. Elle est reprise par tous les boutons pleins et tous les états sélectionnés : bouton primaire (« Regarder maintenant », « Retour à l'accueil »…), bouton lecture du lecteur, point de vue actif, épisode en cours, pastilles de filtre, interrupteurs, badges « En avance » et « Exclusif », et indicateur actif du hero. Le survol utilise `--color-action-hover`, l'état pressé `--color-action-pressed`.
 - Hero en bulle : `--radius-hero: 24px`, marges latérales du contenu, contour fin et ombre.
 - Toutes les couleurs sont des variables de `app/globals.css`, regroupées par rôle : fonds, marque, accents relevés sur la capture, texte, badges, bordures lumineuses, ombres, typographie, layout, rayons, mouvement, z-index.
 - Aucune valeur HEX dans les composants. Seule exception : `lib/theme.ts`, car `<meta name="theme-color">` n'accepte pas de variable CSS.

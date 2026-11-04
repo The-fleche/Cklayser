@@ -81,8 +81,8 @@
      ------------------------------------------------------------------------ */
   --badge-early-bg: #924323;        /* En avance : couleur d'action + blanc (6,9:1) */
   --badge-early-fg: #ffffff;
-  --badge-exclusive-bg: #edab39;    /* Exclusif : doré clair (relevé capture) */
-  --badge-exclusive-fg: #24120a;
+  --badge-exclusive-bg: #924323;    /* Exclusif : couleur d’action (nav active) + blanc (6,9:1) */
+  --badge-exclusive-fg: #ffffff;
   --badge-3d-bg: #1e482d;           /* 3D interactif : vert profond (relevé capture) */
   --badge-3d-fg: #cdefd3;           /* vert clair (8,4:1) */
   --badge-new-bg: #512a18;          /* Nouveau : brun sombre (relevé capture) */
