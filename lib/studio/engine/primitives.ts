@@ -76,23 +76,29 @@ const VASE_PROFILE: [number, number][] = [
   [0.16, 0.9],
 ];
 
-export function createGeometry(shape: PrimitiveShape, size: Vec3): THREE.BufferGeometry {
+/**
+ * Géométrie d'une primitive.
+ * @param detail subdivisions le long de la hauteur (nécessaires au skinning
+ *               pondéré : un maillage ne peut plier qu'entre ses sommets).
+ */
+export function createGeometry(shape: PrimitiveShape, size: Vec3, detail = false): THREE.BufferGeometry {
   const [w, h, d] = size;
+  const rows = detail ? 10 : 1;
   switch (shape) {
     case 'box':
-      return new THREE.BoxGeometry(w, h, d);
+      return new THREE.BoxGeometry(w, h, d, 1, rows, 1);
     case 'sphere': {
       const geometry = new THREE.SphereGeometry(0.5, 32, 20);
       geometry.scale(w, h, d);
       return geometry;
     }
     case 'cylinder':
-      return new THREE.CylinderGeometry(w / 2, w / 2, h, 32);
+      return new THREE.CylinderGeometry(w / 2, w / 2, h, 32, rows);
     case 'cone':
       return new THREE.ConeGeometry(w / 2, h, 32);
     case 'capsule': {
       const radius = Math.min(w, d) / 2;
-      const geometry = new THREE.CapsuleGeometry(radius, Math.max(0.001, h - radius * 2), 6, 16);
+      const geometry = new THREE.CapsuleGeometry(radius, Math.max(0.001, h - radius * 2), 6, 16, rows);
       geometry.scale(1, 1, d / w || 1);
       return geometry;
     }

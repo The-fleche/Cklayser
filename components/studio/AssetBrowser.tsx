@@ -34,6 +34,7 @@ import {
   Square,
 } from 'lucide-react';
 import { useMemo, useRef, useState, type DragEvent } from 'react';
+import { assetUrl } from '@/lib/studio/audio';
 import { ACCEPTED_FILES, importFiles } from '@/lib/studio/import';
 import { useActiveScene, useStudio, useStudioStore } from '@/lib/studio/store';
 import type { AssetFolder, StudioAsset } from '@/lib/studio/types';
@@ -246,18 +247,16 @@ export default function AssetBrowser({ collapsed, onToggleCollapsed }: { collaps
             </p>
             {active.description ? <p className={styles.previewDesc}>{active.description}</p> : null}
             {active.sessionOnly ? <p className={styles.previewWarn}>Fichier lourd : disponible pour cette session seulement.</p> : null}
-            {active.type === 'audio' && active.url ? <audio className={styles.audio} src={active.url} controls preload="metadata" /> : null}
+            {active.type === 'audio' && assetUrl(active) ? <audio className={styles.audio} src={assetUrl(active)} controls preload="metadata" /> : null}
             <div className={styles.previewActions}>
-              {active.type !== 'audio' ? (
-                <button
-                  type="button"
-                  className={styles.primary}
-                  disabled={Boolean(incompatible) || (applies && !selectedId)}
-                  onClick={() => store.useAsset(active.id, { targetId: selectedId })}
-                >
-                  {applies ? 'Appliquer à la sélection' : 'Ajouter à la scène'}
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className={styles.primary}
+                disabled={Boolean(incompatible) || (applies && !selectedId)}
+                onClick={() => store.useAsset(active.id, { targetId: selectedId })}
+              >
+                {active.type === 'audio' ? 'Placer sur la timeline' : applies ? 'Appliquer à la sélection' : 'Ajouter à la scène'}
+              </button>
               {active.origin === 'import' ? (
                 <ToolButton size="sm" label={`Supprimer ${active.name}`} icon={<Trash2 size={14} strokeWidth={2} />} onClick={() => {
                   store.removeAsset(active.id);

@@ -27,6 +27,7 @@ import {
   Copy,
   Diamond,
   Film,
+  Music,
   ListFilter,
   Plus,
   Trash2,
@@ -39,13 +40,14 @@ import { INTERPOLATIONS, PROPERTY_LABELS, animatableProperties, findTrack, getAc
 import { flattenTree, useActiveScene, useStudio, useStudioStore } from '@/lib/studio/store';
 import type { AnimProperty, Interpolation, KeyRef, SceneNode, StudioScene } from '@/lib/studio/types';
 import AnimationTrack, { type SummaryKey, type TrackKey } from './AnimationTrack';
+import { AudioTrackLane, AudioTrackName } from './AudioTrack';
 import InterpolationEditor from './InterpolationEditor';
 import { nodeIcon } from './nodeMeta';
 import Panel from './Panel';
 import PlaybackControls from './PlaybackControls';
 import { KeyButton } from './PropertiesInspector';
 import TimelineRuler, { TIMELINE_PAD, frameToX } from './TimelineRuler';
-import { NumberField, ToolButton } from './ui';
+import { MenuButton, NumberField, ToolButton } from './ui';
 import styles from './Timeline.module.css';
 
 const ROW_H = 24;
@@ -129,6 +131,8 @@ export default function AnimationTimeline({ collapsed, onToggleCollapsed }: { co
   const autoKey = useStudio((state) => state.autoKey);
   const clipboard = useStudio((state) => state.clipboard);
   const clip = getActiveClip(scene)!;
+  const audioAssets = useStudio((state) => state.project.assets).filter((asset) => asset.type === 'audio');
+  const audioRefs = clip.audio ?? [];
   const [onlySelection, setOnlySelection] = useState(false);
   const [marquee, setMarquee] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -403,6 +407,26 @@ export default function AnimationTimeline({ collapsed, onToggleCollapsed }: { co
                 <TrackName key={row.id} row={row} alternate={index % 2 === 1} selected={row.node.id === selectedId} collapsed={Boolean(collapsedTracks[row.node.id])} />
               ))}
               {rows.length === 0 ? <div className={styles.emptyName} /> : null}
+              <div className={`${styles.name} ${styles.nameGroup} ${styles.audioHeader}`}>
+                <Music size={13} strokeWidth={2} aria-hidden="true" className={styles.audioIcon} />
+                <span>Audio</span>
+                <MenuButton
+                  label="Placer un son"
+                  ariaLabel="Placer un son sur la timeline"
+                  tip="Placer un son à la tête de lecture"
+                  className={styles.audioAdd}
+                  items={
+                    audioAssets.length > 0
+                      ? audioAssets.map((asset) => ({ label: asset.name, onSelect: () => store.addAudio(asset.id, Math.round(store.getState().frame)) }))
+                      : [{ label: 'Aucun son : importez-en dans les assets', disabled: true }]
+                  }
+                >
+                  <Plus size={13} strokeWidth={2.2} aria-hidden="true" />
+                </MenuButton>
+              </div>
+              {audioRefs.map((audio) => (
+                <AudioTrackName key={audio.id} audio={audio} />
+              ))}
             </div>
 
             {/* ----- Règle et pistes ----- */}
@@ -446,11 +470,16 @@ export default function AnimationTimeline({ collapsed, onToggleCollapsed }: { co
                   />
                 ))}
                 {rows.length === 0 ? (
-                  <p className={styles.emptyTracks}>
+                  <div className={styles.emptyLane}><p className={styles.emptyTracks}>
                     Aucune piste animée. Sélectionnez un composant, placez la tête de lecture puis appuyez sur K (ou sur le losange ◆ d’une
                     propriété dans l’inspecteur).
-                  </p>
+                  </p></div>
                 ) : null}
+                <div className={`${styles.trackRow} ${styles.trackGroup}`} style={{ width }} />
+                {audioRefs.map((audio) => (
+                  <AudioTrackLane key={audio.id} audio={audio} zoom={zoom} fps={clip.fps} width={width} />
+                ))}
+
                 <span className={styles.endZone} style={{ left: frameToX(clip.duration, zoom) }} aria-hidden="true" />
                 <PlayheadLine zoom={zoom} />
                 {marquee ? (

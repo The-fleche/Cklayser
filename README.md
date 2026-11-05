@@ -41,7 +41,8 @@ app/
   globals.css             design system (variables), reset, utilitaires a11y
   page.tsx                accueil : hero + rangées
   studio/page.tsx         CKlayser Studio : éditeur d'animation plein écran (voir plus bas)
-  serie/[id]/page.tsx     page de visionnage (lecteur à points de vue) ou « Bientôt disponible »
+  serie/[id]/page.tsx     présentation de la série (choix de l'épisode)
+  serie/[id]/episode/[n]/ lecture d'un épisode : vidéo (PovPlayer) ou temps réel (ScenePlayer)
   decouvrir/page.tsx      catalogue complet filtrable (?univers=…)
   exclusives/page.tsx     séries réservées aux adhérents, épisodes en avance
   chaines/page.tsx        toutes les chaînes (Suivre / Adhérer)
@@ -58,7 +59,8 @@ components/
                           NotificationsPanel, MobileNav, DevStateToggle, navItems
   home/                   Hero, HeroSlide, SectionHeader, SeriesRow, SeriesCard, UniverseCard,
                           HomeSections, MyList
-  watch/                  PovPlayer (lecteur vidéo à points de vue), EpisodeList
+  watch/                  PovPlayer (vidéo à points de vue), ScenePlayer (temps réel), EpisodeList,
+                          SeriesListButton
   profile/                ProfileEditor (page /profil)
   catalog/                CatalogBrowser, ExclusivesView, ChannelsView, ChannelView, ChannelActions
   forum/                  ForumHome, ThreadView, ForumAuthorLine, LikeButton
@@ -66,6 +68,7 @@ components/
   studio/                 CKlayser Studio (voir « CKlayser Studio » plus bas)
 data/mock.ts              séries (16), univers, chaînes, adhésions, utilisateur, notifications, slides, épisodes
 data/forum.ts             membres fictifs, communautés, discussions et réponses
+data/cinematics.ts        cinématiques temps réel (2 par série)
 lib/                      types.ts, catalog.ts (requêtes + formatage), app-state.tsx (contexte),
                           profile.ts (validation, photo), forum.ts + forum-store.ts (forums),
                           sidebar.ts (cookie), hooks.ts, theme.ts
@@ -85,7 +88,7 @@ Pour le hero, le champ `focus` (`object-position`) règle le recadrage, notammen
 
 ### Vidéo dans le hero : extrait du dernier épisode
 
-La première diapositive joue automatiquement et en boucle un extrait du **dernier épisode** de sa série. Le hero le retrouve tout seul : il prend le champ `teaser` du dernier épisode (`getLatestEpisode`), donc publier un épisode 3 avec un `teaser` suffit à changer la vidéo de l'accueil. « Regarder maintenant » mène à ce même épisode (`/serie/echos-aelith?episode=2`).
+La première diapositive joue automatiquement et en boucle un extrait du **dernier épisode** de sa série. Le hero le retrouve tout seul : il prend le champ `teaser` du dernier épisode (`getLatestEpisode`), donc publier un épisode 3 avec un `teaser` suffit à changer la vidéo de l'accueil. « Regarder maintenant » mène à la page de présentation de la série (`/serie/echos-aelith`), où le spectateur choisit son épisode.
 
 - `s1e2-extrait.mp4` : 6 s de l'épisode 2 (de 2,5 s à 8,5 s), avec sa piste son. Elle est presque muette, comme celle de la vidéo fournie. La dernière demi-seconde de l'image et du son est fondue dans le début, ce qui rend la boucle continue.
 - La vidéo démarre muette (obligatoire pour la lecture automatique). Le bouton en haut à droite de la bulle active ou coupe le son.
@@ -100,9 +103,19 @@ Fabriquer un extrait bouclable de 6 s, ici à partir de 2,5 s :
 ffmpeg -i episode.mp4 -filter_complex "[0:v]split[x][y];[x]trim=2.5:8.5,setpts=PTS-STARTPTS[a];[y]trim=2.0:2.5,setpts=PTS-STARTPTS[b];[a][b]xfade=transition=fade:duration=0.5:offset=5.5,format=yuv420p[v]" -map "[v]" -an -c:v libx264 -crf 24 -movflags +faststart extrait.mp4
 ```
 
-## Page de visionnage et points de vue
+## Page d'une série et épisodes
 
-`/serie/echos-aelith?episode=N` ouvre le lecteur de l'épisode N ; sans paramètre, c'est l'épisode 1. La liste des épisodes est sous le lecteur. Une série sans épisode vidéo affiche toujours « Bientôt disponible ». Les épisodes sont décrits dans `data/mock.ts` (`episodes`), avec un tableau `povs` : un point de vue par vidéo du même mouvement. Avec un seul point de vue, le sélecteur est masqué.
+- **`/serie/[id]` : présentation.** Aucun épisode ne se lance tout seul. La page montre :
+  - un bandeau avec le visuel, le titre, les informations, le synopsis, « Commencer : épisode 1 » et « Ma liste » ;
+  - la liste **« Choisir un épisode »** ;
+  - une fiche « À propos » ;
+  - les séries du même univers.
+- **`/serie/[id]/episode/[n]` : lecture** de l'épisode choisi, avec un lien de retour vers la série et la liste des épisodes (« En cours »). L'ancien lien `/serie/[id]?episode=N` redirige vers cette route.
+- **Deux sortes d'épisodes**, numérotés à la suite (`lib/series-content.ts`) :
+  - **vidéo** (`data/mock.ts` → `episodes`), lus par le lecteur à points de vue ;
+  - **temps réel** (`data/cinematics.ts`) : des cinématiques au format Studio, reconstruites sur l'appareil (section suivante).
+
+Les épisodes vidéo ont un tableau `povs` : un point de vue par vidéo du même mouvement. Avec un seul point de vue, le sélecteur est masqué.
 
 | Épisode | Vidéo | Points de vue |
 | --- | --- | --- |
@@ -126,6 +139,38 @@ Changement de point de vue (`components/watch/PovPlayer.tsx`) :
 - Raccourcis quand le focus est dans le lecteur : Espace ou K (lecture), ← / → (±0,5 s), M (son), F (plein écran), 1 à 3 (point de vue).
 
 Pour ajouter un épisode : déposer les MP4 dans `public/watch/<serie>/` et les rendre lisibles au démarrage avec `ffmpeg -i in.mp4 -c copy -movflags +faststart out.mp4`, puis ajouter une entrée dans `episodes`.
+
+## Cinématiques temps réel (2 par série)
+
+`data/cinematics.ts` décrit 32 cinématiques (titre, synopsis, durée, mise en scène). `lib/studio/cinematics.ts` les construit au format CKlayser Studio, pour la 3D ou la 2D selon le format de la série. Chaque scène contient :
+
+- un décor généré selon le thème de la série : ruines, flèches, portail, engrenages, phare, dunes, glacier, lucioles, prairie… ;
+- une palette et une ambiance sonore de synthèse propres à la série ;
+- des personnages riggés (11 bones, skinning pondéré, IK) ;
+- 2 à 3 caméras du spectateur, avec une transition ;
+- un clip animé.
+
+Six mises en scène :
+
+| Mise en scène | Contenu | Caméras |
+| --- | --- | --- |
+| Rencontre | salut, inclinaison, réponse | plan large, champ, contrechamp |
+| Voyage | cycle de marche à travers le décor | travelling, parallaxe en 2D |
+| Contemplation | un astre monte, le regard le suit (contrainte « Viser ») | grue, visage, contre-plongée |
+| Fête | ronde de trois personnages autour d'un foyer | orbite, plongée, ras du sol |
+| Découverte | agenouillement (IK des pieds), la main saisit un objet (IK de la main) | approche, gros plan |
+| Orbite | anneaux, noyau lumineux, vaisseau en orbite | orbite, pilote, poursuite |
+
+**Lecteur public** (`components/watch/ScenePlayer.tsx`) : aucune vidéo n'est téléchargée. Le lecteur utilise le moteur du Studio (`SceneRenderer`, mode aperçu) et rejoue la scène en temps réel.
+
+- Lecture, pause et barre de progression.
+- Points de vue (touches 1 à n) avec la transition choisie par le créateur :
+  - coupe ;
+  - fondu au noir ;
+  - mouvement fluide : interpolation de la position, de l'orientation et de l'optique entre les deux caméras.
+- **Caméra libre** sur les séries 3D (touche L) : une orbite autour de la scène, limitée par les distances et angles définis dans le Studio.
+- Son synchronisé (M), plein écran (F), fin d'épisode avec « Revoir » et « Épisode suivant ».
+- Le lien « Ouvrir cette scène dans CKlayser Studio » (`/studio?cinematique=…`) ajoute la cinématique au projet du Studio, où elle reste modifiable.
 
 ## Page profil
 
@@ -275,13 +320,25 @@ Conventions : transformations locales, rotations en degrés dans l'ordre d'Euler
   - Une propriété animée modifiée sans enregistrement automatique prend une valeur temporaire (champ orange) jusqu'au prochain changement d'image ; le losange l'enregistre.
   - Avec l'enregistrement automatique (●), chaque modification crée ou met à jour la keyframe de l'image courante.
 - **Squelettes** :
-  - bones hiérarchiques ;
-  - corps lié au squelette : chaque partie suit son bone (skinning rigide), en 3D comme en 2D ;
-  - points de contrôle avec contrainte « Viser » : un bone s'oriente vers le point, avec une influence réglable.
+  - bones hiérarchiques ; les personnages ont 11 bones, avec bras et jambes en deux segments ;
+  - **skinning pondéré** (par défaut), en 3D comme en 2D. Chaque partie du corps est un `SkinnedMesh` subdivisé, et tous partagent un `THREE.Skeleton` formé des bones du Studio. Les poids sont calculés automatiquement : 1 pour le bone propriétaire, plus le parent et les enfants près de l'articulation commune, avec une décroissance quadratique. Coudes, genoux et épaules se plient donc en continu. Le mode rigide reste disponible ;
+  - points de contrôle :
+    - contrainte **« Viser »** : un bone s'oriente vers le point ;
+    - contrainte **« IK »** : cinématique inverse analytique à deux bones (loi des cosinus), qui respecte la longueur de la chaîne. Le sens de pliage est réglable (genou vers l'avant, coude vers l'arrière). L'influence est réglable ;
+  - démo 3D : la main gauche suit une cible animée, les pieds restent plantés quand le bassin descend. Démo 2D : genoux pliés par l'IK.
 - **Assets** :
   - dossiers, recherche, aperçu ;
   - glisser vers le viewport ou la hiérarchie pour instancier un objet, ou pour appliquer un matériau ou un préréglage d'animation (rotation 360°, rebond, balancement) ;
-  - import par bouton ou par dépôt de fichiers : images (sprite ou plan texturé), modèles `.glb` (chargés par GLTFLoader), sons (prévisualisation).
+  - import par bouton ou par dépôt de fichiers :
+    - images : sprite ou plan texturé ;
+    - modèles `.glb`, avec **squelette et animations** (`lib/studio/gltf.ts`). Les bones du fichier deviennent des bones du Studio qui pilotent le maillage du fichier. Chaque animation, échantillonnée à 24 i/s, devient un clip modifiable : position, rotation (angles déroulés) et échelle ;
+    - sons ;
+  - bibliothèque d'ambiances sonores de synthèse : atelier, vent, nuit, espace, ressac, fête. Elles sont générées dans le navigateur, sans fichier.
+- **Pistes audio** dans la timeline (`lib/studio/audio.ts`) :
+  - forme d'onde réelle (Web Audio) ;
+  - glisser ou flèches pour décaler le son ;
+  - muet, volume, retrait ;
+  - lecture synchronisée sur la tête de lecture : départ, décalage, vitesse et bouclage.
 - **Fichiers** :
   - annuler / rétablir ;
   - enregistrement dans le navigateur (`cklayser:studio:projet`) avec indicateur ;
@@ -290,12 +347,10 @@ Conventions : transformations locales, rotations en degrés dans l'ordre d'Euler
 
 ### À développer (non simulé)
 
-- Déformation pondérée des maillages (poids par sommet) et maillages 2D déformables. Aujourd'hui, le skinning est rigide.
-- Cinématique inverse (IK) et limites angulaires des bones.
-- Lecture des squelettes et animations contenus dans les fichiers glTF importés.
-- Pistes audio dans la timeline.
+- Peinture manuelle des poids. Ils sont aujourd'hui calculés automatiquement.
+- IK à plus de deux bones et limites angulaires.
 - Sauvegarde en ligne et stockage des fichiers lourds. Les fichiers de plus de 1,5 Mo ne restent disponibles que pendant la session.
-- Lecteur public reconstruisant les scènes du Studio : le format de projet est prêt, le lecteur actuel lit encore des vidéos.
+- Publication d'une scène du Studio comme épisode d'une chaîne. Les cinématiques des séries sont aujourd'hui générées par le code (`data/cinematics.ts`).
 
 ### Raccourcis
 

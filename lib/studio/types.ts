@@ -129,16 +129,31 @@ export interface ControlData {
   radius: number;
   /** Influence de la contrainte, 0 à 1. */
   influence: number;
-  /** Contrainte : le bone ciblé s'oriente vers ce point. */
-  constraint: 'none' | 'aim';
+  /**
+   * Contrainte :
+   *  - aim : le bone ciblé s'oriente vers ce point ;
+   *  - ik  : cinématique inverse à deux bones. Le bone ciblé est le bone de
+   *          BOUT de chaîne (avant-bras, tibia) ; son parent est le bone
+   *          racine de la chaîne (bras, cuisse). L'extrémité du bout de
+   *          chaîne rejoint le point.
+   */
+  constraint: 'none' | 'aim' | 'ik';
   targetBoneId?: string;
+  /** IK : sens de pliage de l'articulation (1 : avant / gauche, -1 : arrière / droite). */
+  bend?: 1 | -1;
   /** Axe du bone orienté vers le point : Y (le long du bone) ou Z (l'avant, ex. regard). */
   aimAxis?: 'y' | 'z';
 }
 
 export interface SkeletonData {
   showBones: boolean;
-  /** Mode de déformation. Seul « rigid » est implémenté (voir README). */
+  /**
+   * Mode de déformation :
+   *  - rigid    : chaque partie du corps suit un seul bone ;
+   *  - weighted : maillage déformé (skinning) avec des poids par sommet
+   *               calculés automatiquement (distance aux bones voisins) :
+   *               coudes, genoux et épaules se plient en douceur.
+   */
   deformation: 'rigid' | 'weighted';
   boneColor: string;
 }
@@ -160,7 +175,13 @@ export interface SceneNode {
   bone?: BoneData;
   control?: ControlData;
   skeleton?: SkeletonData;
-  model?: { assetId: string };
+  model?: ModelData;
+}
+
+export interface ModelData {
+  assetId: string;
+  /** Rig importé : nom du bone glTF → composant « bone » du Studio qui le pilote. */
+  boneMap?: Record<string, string>;
 }
 
 /* -------------------------------------------------------------------------
@@ -189,6 +210,17 @@ export interface Track {
   keys: Keyframe[];
 }
 
+/** Son placé sur la timeline d'un clip. */
+export interface AudioRef {
+  id: string;
+  assetId: string;
+  /** Image de départ dans le clip. */
+  start: number;
+  /** Volume, 0 à 1. */
+  volume: number;
+  muted: boolean;
+}
+
 export interface AnimationClip {
   id: string;
   name: string;
@@ -199,6 +231,8 @@ export interface AnimationClip {
   loop: boolean;
   defaultInterpolation: Interpolation;
   tracks: Track[];
+  /** Pistes audio (facultatif : absent des projets antérieurs). */
+  audio?: AudioRef[];
 }
 
 /* -------------------------------------------------------------------------
@@ -264,6 +298,12 @@ export interface StudioAsset {
   mime?: string;
   /** Une URL de session ne survit pas au rechargement de la page. */
   sessionOnly?: boolean;
+  /** Son de synthèse (bibliothèque) : généré dans le navigateur, sans fichier. */
+  synth?: { kind: SynthKind; seconds: number };
+  /** Modèle glTF : cadrage automatique (échelle, décalage vertical). */
+  fit?: { scale: number; offsetY: number };
+  /** Modèle glTF : squelette et animations lus à l'import. */
+  rig?: GltfRig;
 }
 
 export interface StudioProject {
@@ -289,4 +329,24 @@ export type ViewMode = 'edit' | 'camera' | 'preview';
 export interface KeyRef {
   trackId: string;
   keyId: string;
+}
+
+export type SynthKind = 'atelier' | 'vent' | 'nuit' | 'espace' | 'mer' | 'fete';
+
+/** Squelette et animations extraits d'un fichier glTF (sérialisables). */
+export interface GltfRig {
+  bones: {
+    name: string;
+    parent: string | null;
+    position: Vec3;
+    rotation: Vec3;
+    scale: Vec3;
+    length: number;
+  }[];
+  clips: {
+    name: string;
+    /** Durée en images (24 i/s). */
+    duration: number;
+    tracks: { bone: string; property: 'position' | 'rotation' | 'scale'; frames: number[]; values: number[][] }[];
+  }[];
 }

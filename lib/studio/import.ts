@@ -5,9 +5,10 @@
  *
  *  - images (PNG, JPEG, WebP, SVG) → Textures : utilisables comme sprite
  *    (2D) ou comme plan texturé (3D) ;
- *  - modèles glTF binaires (.glb) → Characters ;
- *  - sons (MP3, WAV, OGG) → Audio (prévisualisation ; pas encore de piste
- *    audio dans la timeline).
+ *  - modèles glTF binaires (.glb) → Characters ; leur squelette et leurs
+ *    animations sont lus (lib/studio/gltf.ts) et deviennent, à
+ *    l'instanciation, des bones et des clips modifiables ;
+ *  - sons (MP3, WAV, OGG) → Audio : à placer sur la timeline d'un clip.
  *
  * Les fichiers légers (≤ 1,5 Mo) sont intégrés au projet (data URL) et
  * survivent à l'enregistrement ; les plus lourds restent disponibles pour la
@@ -15,6 +16,7 @@
  * navigateur d'assets. Le stockage en ligne n'existe pas encore.
  */
 import { uid } from './factory';
+import { inspectGltf } from './gltf';
 import type { StudioStore } from './store';
 import type { StudioAsset } from './types';
 
@@ -70,7 +72,21 @@ export async function importFiles(files: FileList | File[], store: StudioStore):
       sessionOnly,
       ...kind,
     };
+    if (asset.type === 'model') {
+      try {
+        const info = await inspectGltf(url);
+        asset.fit = info.fit;
+        if (info.rig) asset.rig = info.rig;
+      } catch {
+        store.notify(`« ${file.name} » : fichier glTF illisible.`, 'error');
+        if (sessionOnly) URL.revokeObjectURL(url);
+        continue;
+      }
+    }
     store.addAsset(asset);
+    if (asset.rig) {
+      store.notify(`« ${asset.name} » importé : ${asset.rig.bones.length} bones, ${asset.rig.clips.length} animation${asset.rig.clips.length > 1 ? 's' : ''}.`);
+    }
     imported.push(asset);
   }
   return imported;

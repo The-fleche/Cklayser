@@ -43,8 +43,8 @@ export default function ObjectProperties({ node }: { node: SceneNode }) {
     return (
       <Section title="Corps lié au squelette">
         <Note>
-          Chaque partie suit son bone (skinning rigide). Animez les bones du squelette « {scene.nodes[skin.skeletonId]?.name ?? '—'} »
-          pour faire bouger le corps.
+          Animez les bones du squelette « {scene.nodes[skin.skeletonId]?.name ?? '—'} » pour faire bouger le corps : le maillage se
+          déforme selon les poids des bones.
         </Note>
         {skin.parts.map((part, index) => (
           <ColorField
@@ -60,7 +60,7 @@ export default function ObjectProperties({ node }: { node: SceneNode }) {
           />
         ))}
         <NumberField label="Rugosité" short="R" value={node.mesh.roughness} min={0} max={1} step={0.05} onChange={(value) => store.updateNode(node.id, (draft) => void (draft.mesh!.roughness = value))} {...gesture} />
-        <Note tone="todo">À développer : skinning pondéré (déformation continue du maillage par plusieurs bones).</Note>
+        <Note>Mode de déformation (pondérée ou rigide) : propriétés du squelette.</Note>
       </Section>
     );
   }
@@ -69,7 +69,7 @@ export default function ObjectProperties({ node }: { node: SceneNode }) {
     const skin = node.sprite.skin;
     return (
       <Section title="Corps lié au squelette 2D">
-        <Note>Chaque sprite suit son bone (découpage façon papier). Ordre d’affichage par partie.</Note>
+        <Note>Chaque sprite est lié à son bone ; ordre d’affichage par partie.</Note>
         {skin.parts.map((part, index) => (
           <ColorField
             key={part.boneId}
@@ -83,7 +83,7 @@ export default function ObjectProperties({ node }: { node: SceneNode }) {
             }
           />
         ))}
-        <Note tone="todo">À développer : maillage 2D déformable (points de contrôle pondérés sur le sprite).</Note>
+        <Note>En déformation pondérée, chaque sprite est un maillage subdivisé qui se plie avec les bones (propriétés du squelette).</Note>
       </Section>
     );
   }

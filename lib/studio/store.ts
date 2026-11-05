@@ -967,6 +967,18 @@ export class StudioStore {
     });
   };
 
+  /** Ajoute une scène toute faite (cinématique d'une série) et l'ouvre. */
+  importScene = (scene: StudioScene, assets: StudioAsset[] = []): void => {
+    this.edit((_active, project) => {
+      project.scenes = project.scenes.filter((item) => item.id !== scene.id);
+      project.scenes.push(structuredClone(scene));
+      for (const asset of assets) if (!project.assets.some((item) => item.id === asset.id)) project.assets.push({ ...asset });
+    });
+    // Le changement de scène se fait hors historique, comme un clic sur un onglet.
+    this.setActiveScene(scene.id);
+    this.notify(`Cinématique « ${scene.name} » ouverte dans le Studio : modifiez-la librement.`);
+  };
+
   addScene = (dimension: SceneDimension): void => {
     const count = this.state.project.scenes.length + 1;
     const scene = makeEmptyScene(`Scène ${count} (${dimension.toUpperCase()})`, dimension);
@@ -1110,8 +1122,7 @@ export class StudioStore {
     }
 
     if (asset.type === 'audio') {
-      this.notify('Les pistes audio ne sont pas encore prises en charge par la timeline.', 'error');
-      return null;
+      return this.addAudio(asset.id, Math.round(this.state.frame));
     }
 
     if (asset.dimension && asset.dimension !== scene.dimension) {
@@ -1162,6 +1173,7 @@ export class StudioStore {
         node.mesh!.textureAssetId = asset.id;
       }
     } else if (asset.type === 'model') {
+      if (asset.rig) return this.instantiateRiggedModel(asset, parentId, position);
       node = makeNode('model', asset.name, { model: { assetId: asset.id }, transform: { position: [position[0], 0, position[2]], rotation: [0, 0, 0], scale: [1, 1, 1] } });
     } else {
       return null;
@@ -1171,6 +1183,96 @@ export class StudioStore {
     this.set({ selectedId: node.id, expanded: { ...this.state.expanded, [parentId]: true } });
     this.notify(`« ${node.name} » ajouté à la scène.`);
     return node.id;
+  };
+
+  /**
+   * Modèle glTF avec squelette : crée le modèle, un Skeleton3D dont les
+   * bones reproduisent ceux du fichier (ils les piloteront), un
+   * AnimationPlayer, et un clip modifiable par animation du fichier.
+   */
+  private instantiateRiggedModel(asset: StudioAsset, parentId: string, position: Vec3): string | null {
+    const rig = asset.rig!;
+    const fit = asset.fit ?? { scale: 1, offsetY: 0 };
+    const model = makeNode('model', asset.name, {
+      model: { assetId: asset.id, boneMap: {} },
+      transform: { position: [position[0], 0, position[2]], rotation: [0, 0, 0], scale: [1, 1, 1] },
+    });
+    const skeleton = makeNode('skeleton', 'Skeleton3D', {
+      transform: { position: [0, fit.offsetY, 0], rotation: [0, 0, 0], scale: [fit.scale, fit.scale, fit.scale] },
+      skeleton: { showBones: true, deformation: 'weighted', boneColor: '#fdcf7b' },
+    });
+    const ids = new Map<string, string>();
+    const boneNodes = rig.bones.map((bone) => {
+      const node = makeNode('bone', bone.name, {
+        transform: { position: [...bone.position], rotation: [...bone.rotation], scale: [...bone.scale] },
+        bone: { length: bone.length, color: '#fdcf7b' },
+      });
+      ids.set(bone.name, node.id);
+      return { bone, node };
+    });
+    model.model!.boneMap = Object.fromEntries(ids);
+    const fps = this.clip.fps;
+    const clips: AnimationClip[] = rig.clips.map((source) => {
+      const clip = makeClip(`${asset.name} · ${source.name}`.slice(0, 60), Math.max(1, source.duration), 24);
+      clip.defaultInterpolation = 'linear';
+      clip.tracks = source.tracks
+        .filter((item) => ids.has(item.bone))
+        .map((item) => ({
+          id: uid('trk'),
+          nodeId: ids.get(item.bone)!,
+          property: item.property,
+          keys: item.frames.map((frame, index) => makeKey(frame, item.values[index] ?? [0, 0, 0], 'linear')),
+        }));
+      return clip;
+    });
+    this.edit((draft) => {
+      attach(draft.nodes, model, parentId);
+      attach(draft.nodes, skeleton, model.id);
+      for (const { bone, node } of boneNodes) {
+        attach(draft.nodes, node, bone.parent && ids.has(bone.parent) ? ids.get(bone.parent)! : skeleton.id);
+      }
+      attach(draft.nodes, makeNode('animationPlayer', 'AnimationPlayer'), model.id);
+      draft.clips.push(...clips);
+      const active = getActiveClip(draft);
+      if (clips[0] && (!active || active.tracks.length === 0)) draft.activeClipId = clips[0].id;
+    });
+    this.set({ selectedId: model.id, expanded: { ...this.state.expanded, [parentId]: true, [model.id]: true } });
+    this.notify(
+      `« ${asset.name} » ajouté : ${rig.bones.length} bone${rig.bones.length > 1 ? 's' : ''}, ${clips.length} animation${clips.length > 1 ? 's' : ''} converties en clips${fps !== 24 ? ' (24 i/s)' : ''}.`,
+    );
+    return model.id;
+  }
+
+  /* ----- audio ----- */
+
+  /** Place un son sur la timeline du clip actif, à l'image donnée. */
+  addAudio = (assetId: string, start = 0): string | null => {
+    const asset = this.state.project.assets.find((item) => item.id === assetId);
+    if (!asset || asset.type !== 'audio') return null;
+    const ref = { id: uid('aud'), assetId, start: Math.max(0, Math.round(start)), volume: 0.8, muted: false };
+    this.edit((scene) => {
+      const clip = getActiveClip(scene)!;
+      clip.audio = [...(clip.audio ?? []), ref];
+    }, { keepOverrides: true });
+    this.notify(`Son « ${asset.name} » placé sur la timeline à l’image ${ref.start}.`);
+    return ref.id;
+  };
+
+  updateAudio = (audioId: string, patch: Partial<{ start: number; volume: number; muted: boolean }>): void => {
+    this.edit((scene) => {
+      const ref = getActiveClip(scene)!.audio?.find((item) => item.id === audioId);
+      if (!ref) return false;
+      Object.assign(ref, patch);
+      ref.start = Math.max(0, Math.round(ref.start));
+    }, { keepOverrides: true });
+  };
+
+  removeAudio = (audioId: string): void => {
+    this.edit((scene) => {
+      const clip = getActiveClip(scene)!;
+      clip.audio = (clip.audio ?? []).filter((item) => item.id !== audioId);
+    }, { keepOverrides: true });
+    this.notify('Son retiré de la timeline.');
   };
 
   /* ----- fichiers ----- */

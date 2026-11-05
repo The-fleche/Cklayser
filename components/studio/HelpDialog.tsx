@@ -92,9 +92,9 @@ export default function HelpDialog({ open, onClose }: { open: boolean; onClose: 
           <h3 className={styles.dialogSection}>Version actuelle</h3>
           <p className={styles.dialogText}>
             Fonctionnel : scènes 2D et 3D, hiérarchie, transformations, caméras de scène et vue caméra, keyframes, interpolations,
-            lecture, annuler / rétablir, enregistrement local et export JSON. Les bones déplacent des parties rigides (skinning
-            rigide). À développer : déformation pondérée des maillages, cinématique inverse, pistes audio, rendu partagé avec le
-            lecteur public et sauvegarde en ligne.
+            lecture, skinning pondéré, IK à deux bones, import glTF avec squelette et animations, pistes audio, annuler / rétablir,
+            enregistrement local et export JSON. À développer : peinture manuelle des poids, IK à plus de deux bones, sauvegarde en
+            ligne et publication d’une scène comme épisode.
           </p>
         </section>
       </div>

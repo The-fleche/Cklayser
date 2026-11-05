@@ -15,7 +15,7 @@
  *  - preload   précharge le visuel (première diapositive : LCP)
  *  - playing   la vidéo de fond (si la diapositive en a une) doit jouer :
  *              diapositive active, sans pause ni mouvement réduit
- *  - watchHref lien « Regarder maintenant » (dernier épisode de la série)
+ *  - watchHref lien « Regarder maintenant » (présentation de la série)
  *  - muted     son de la vidéo coupé (true par défaut : lecture automatique)
  *
  * Vidéo : l'affiche (slide.image) est rendue par next/image en dessous ;

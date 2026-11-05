@@ -211,14 +211,22 @@ export function NumberField({
   state,
 }: NumberFieldProps) {
   const format = (number: number) => (Number.isFinite(number) ? Number(number.toFixed(precision)).toString() : '0');
-  const [draft, setDraft] = useState<string | null>(null);
+  const [draft, setDraftState] = useState<string | null>(null);
+  // Copie synchrone du brouillon : Entrée puis la perte du focus ne doivent
+  // valider qu'une fois (une seule entrée d'historique).
+  const draftRef = useRef<string | null>(null);
+  const setDraft = (next: string | null) => {
+    draftRef.current = next;
+    setDraftState(next);
+  };
   const scrub = useRef<{ x: number; start: number; moved: boolean } | null>(null);
   const id = useId();
   const clamp = (number: number) => Math.min(max, Math.max(min, number));
 
   const commit = () => {
-    if (draft === null) return;
-    const parsed = Number(draft.replace(',', '.'));
+    const current = draftRef.current;
+    if (current === null) return;
+    const parsed = Number(current.replace(',', '.'));
     setDraft(null);
     if (Number.isFinite(parsed) && parsed !== value) onChange(clamp(parsed));
   };

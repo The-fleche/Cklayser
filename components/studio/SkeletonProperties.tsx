@@ -74,14 +74,14 @@ export default function SkeletonProperties({ node }: { node: SceneNode }) {
             label="Déformation"
             value={data.deformation}
             options={[
+              { value: 'weighted', label: 'Pondérée (skinning)' },
               { value: 'rigid', label: 'Rigide (parties liées)' },
-              { value: 'weighted', label: 'Pondérée — à venir', disabled: true },
             ]}
             onChange={(value) => store.updateNode(node.id, (draft) => void (draft.skeleton!.deformation = value))}
           />
           <Note>
-            Rigide : chaque partie du corps suit un bone. La déformation pondérée (poids par sommet, plusieurs bones par zone) nécessite
-            un moteur de skinning qui reste à développer.
+            Pondérée : le maillage se plie en continu aux articulations. Chaque sommet suit son bone et, près d’une articulation, se
+            partage avec le bone voisin (parent ou enfant) ; poids calculés automatiquement. Rigide : chaque partie suit un seul bone.
           </Note>
         </Section>
       </>
@@ -155,11 +155,14 @@ export default function SkeletonProperties({ node }: { node: SceneNode }) {
             constraints.map((item) => (
               <button key={item.id} type="button" className={styles.boneLink} onClick={() => store.select(item.id)}>
                 <Crosshair size={13} strokeWidth={2} aria-hidden="true" />
-                Viser « {item.name} » · influence {Math.round((item.control?.influence ?? 0) * 100)} %
+                {item.control?.constraint === 'ik' ? 'IK' : 'Viser'} « {item.name} » · influence {Math.round((item.control?.influence ?? 0) * 100)} %
               </button>
             ))
           )}
-          <Note tone="todo">À développer : cinématique inverse (IK) à deux bones et limites angulaires.</Note>
+          <Note>
+            IK : un point de contrôle en mode « IK » qui cible ce bone (bout de chaîne) plie la chaîne parent → ce bone pour que son
+            extrémité rejoigne le point.
+          </Note>
         </Section>
       </>
     );
@@ -179,9 +182,41 @@ export default function SkeletonProperties({ node }: { node: SceneNode }) {
           options={[
             { value: 'none', label: 'Aucune (repère)' },
             { value: 'aim', label: 'Viser : orienter un bone' },
+            { value: 'ik', label: 'IK : chaîne de deux bones' },
           ]}
           onChange={(value) => store.updateNode(node.id, (draft) => void (draft.control!.constraint = value))}
         />
+        {data.constraint === 'ik' ? (
+          <>
+            <SelectField
+              label="Bout de chaîne"
+              value={data.targetBoneId ?? ''}
+              options={[
+                { value: '', label: 'Choisir…' },
+                ...bones
+                  .filter((bone) => bone.parentId && scene.nodes[bone.parentId]?.kind === 'bone')
+                  .map((bone) => ({ value: bone.id, label: `${scene.nodes[bone.parentId!]?.name} → ${bone.name}` })),
+              ]}
+              onChange={(value) => store.updateNode(node.id, (draft) => void (draft.control!.targetBoneId = value || undefined))}
+            />
+            <SelectField
+              label="Pliage"
+              value={String(data.bend ?? 1)}
+              options={
+                scene.dimension === '3d'
+                  ? [
+                      { value: '1', label: 'Vers l’avant (genou)' },
+                      { value: '-1', label: 'Vers l’arrière (coude)' },
+                    ]
+                  : [
+                      { value: '1', label: 'Côté 1' },
+                      { value: '-1', label: 'Côté 2' },
+                    ]
+              }
+              onChange={(value) => store.updateNode(node.id, (draft) => void (draft.control!.bend = value === '-1' ? -1 : 1))}
+            />
+          </>
+        ) : null}
         {data.constraint === 'aim' ? (
           <>
             <SelectField
@@ -202,8 +237,8 @@ export default function SkeletonProperties({ node }: { node: SceneNode }) {
           </>
         ) : null}
         <Note>
-          Déplacez le point (outil T ou W) : le bone ciblé s’oriente vers lui selon l’influence. Sa position s’anime comme celle de tout
-          composant.
+          Déplacez le point (outil T ou W) : le bone ciblé s’oriente vers lui (Viser) ou la chaîne se plie pour l’atteindre (IK), selon
+          l’influence. Sa position s’anime comme celle de tout composant.
         </Note>
       </Section>
     );

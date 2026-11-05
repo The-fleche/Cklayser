@@ -12,6 +12,10 @@
  * générés n'existent pas au rendu serveur.
  */
 import { useEffect, useState } from 'react';
+import { getCinematic } from '@/data/cinematics';
+import { getSeries } from '@/lib/catalog';
+import { bindStudioAudio } from '@/lib/studio/audio';
+import { buildCinematic } from '@/lib/studio/cinematics';
 import { StudioStore, StudioStoreContext, STUDIO_STORAGE_KEY, parseProject } from '@/lib/studio/store';
 import MobileStudio from './MobileStudio';
 import StudioLayout from './StudioLayout';
@@ -20,14 +24,23 @@ import styles from './StudioLayout.module.css';
 const MOBILE_QUERY = '(max-width: 767px)';
 
 function createStore(): StudioStore {
+  let store: StudioStore | null = null;
   try {
     const saved = window.localStorage.getItem(STUDIO_STORAGE_KEY);
     const project = saved ? parseProject(saved) : null;
-    if (project) return new StudioStore(project, project.updatedAt || Date.now());
+    if (project) store = new StudioStore(project, project.updatedAt || Date.now());
   } catch {
     /* stockage indisponible : projet de démonstration */
   }
-  return new StudioStore();
+  store ??= new StudioStore();
+  // /studio?cinematique=… : ouvre la cinématique d'une série dans le projet.
+  const cinematic = getCinematic(new URLSearchParams(window.location.search).get('cinematique') ?? '');
+  const series = cinematic ? getSeries(cinematic.seriesId) : undefined;
+  if (cinematic && series) {
+    const { scene, assets } = buildCinematic(cinematic, series);
+    store.importScene(scene, assets);
+  }
+  return store;
 }
 
 export default function StudioApp() {
@@ -60,8 +73,11 @@ function StudioRoot({ mobile }: { mobile: boolean }) {
       if (store.getState().saveState === 'dirty' && store.getState().canUndo) event.preventDefault();
     };
     window.addEventListener('beforeunload', onBeforeUnload);
+    // Pistes audio des clips, synchronisées sur la lecture.
+    const unbindAudio = bindStudioAudio(store);
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
+      unbindAudio();
       store.pause();
     };
   }, [store]);

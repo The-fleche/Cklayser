@@ -160,20 +160,72 @@ const MANNEQUIN_BONES: BoneSpec[] = [
   { key: 'hips', name: 'Hips', parent: null, position: [0, 0.95, 0], rotation: [0, 0, 0], length: 0.12 },
   { key: 'torso', name: 'Torso', parent: 'hips', position: [0, 0.12, 0], rotation: [0, 0, 0], length: 0.48 },
   { key: 'head', name: 'Head', parent: 'torso', position: [0, 0.5, 0], rotation: [0, 0, 0], length: 0.3 },
-  { key: 'armL', name: 'Arm_L', parent: 'torso', position: [0.24, 0.44, 0], rotation: [0, 0, -168], length: 0.62 },
-  { key: 'armR', name: 'Arm_R', parent: 'torso', position: [-0.24, 0.44, 0], rotation: [0, 0, 168], length: 0.62 },
-  { key: 'legL', name: 'Leg_L', parent: 'hips', position: [0.11, 0, 0], rotation: [0, 0, 180], length: 0.9 },
-  { key: 'legR', name: 'Leg_R', parent: 'hips', position: [-0.11, 0, 0], rotation: [0, 0, 180], length: 0.9 },
+  { key: 'armL', name: 'Arm_L', parent: 'torso', position: [0.24, 0.44, 0], rotation: [0, 0, -168], length: 0.32 },
+  { key: 'forearmL', name: 'Forearm_L', parent: 'armL', position: [0, 0.32, 0], rotation: [0, 0, 0], length: 0.3 },
+  { key: 'armR', name: 'Arm_R', parent: 'torso', position: [-0.24, 0.44, 0], rotation: [0, 0, 168], length: 0.32 },
+  { key: 'forearmR', name: 'Forearm_R', parent: 'armR', position: [0, 0.32, 0], rotation: [0, 0, 0], length: 0.3 },
+  { key: 'legL', name: 'Leg_L', parent: 'hips', position: [0.11, 0, 0], rotation: [0, 0, 180], length: 0.46 },
+  { key: 'shinL', name: 'Shin_L', parent: 'legL', position: [0, 0.46, 0], rotation: [0, 0, 0], length: 0.46 },
+  { key: 'legR', name: 'Leg_R', parent: 'hips', position: [-0.11, 0, 0], rotation: [0, 0, 180], length: 0.46 },
+  { key: 'shinR', name: 'Shin_R', parent: 'legR', position: [0, 0.46, 0], rotation: [0, 0, 0], length: 0.46 },
 ];
 
 const PANTIN_BONES: BoneSpec[] = [
   { key: 'hips', name: 'Bassin', parent: null, position: [0, 1.25, 0], rotation: [0, 0, 0], length: 0.2 },
   { key: 'torso', name: 'Tronc', parent: 'hips', position: [0, 0.2, 0], rotation: [0, 0, 0], length: 0.85 },
   { key: 'head', name: 'Tête', parent: 'torso', position: [0, 0.85, 0], rotation: [0, 0, 0], length: 0.6 },
-  { key: 'armL', name: 'Bras_G', parent: 'torso', position: [0.28, 0.72, 0], rotation: [0, 0, -150], length: 0.8 },
-  { key: 'armR', name: 'Bras_D', parent: 'torso', position: [-0.28, 0.72, 0], rotation: [0, 0, 150], length: 0.8 },
-  { key: 'legL', name: 'Jambe_G', parent: 'hips', position: [0.16, 0, 0], rotation: [0, 0, 180], length: 1.2 },
-  { key: 'legR', name: 'Jambe_D', parent: 'hips', position: [-0.16, 0, 0], rotation: [0, 0, 180], length: 1.2 },
+  { key: 'armL', name: 'Bras_G', parent: 'torso', position: [0.28, 0.72, 0], rotation: [0, 0, -150], length: 0.42 },
+  { key: 'forearmL', name: 'AvantBras_G', parent: 'armL', position: [0, 0.42, 0], rotation: [0, 0, 0], length: 0.4 },
+  { key: 'armR', name: 'Bras_D', parent: 'torso', position: [-0.28, 0.72, 0], rotation: [0, 0, 150], length: 0.42 },
+  { key: 'forearmR', name: 'AvantBras_D', parent: 'armR', position: [0, 0.42, 0], rotation: [0, 0, 0], length: 0.4 },
+  { key: 'legL', name: 'Cuisse_G', parent: 'hips', position: [0.16, 0, 0], rotation: [0, 0, 180], length: 0.62 },
+  { key: 'shinL', name: 'Mollet_G', parent: 'legL', position: [0, 0.62, 0], rotation: [0, 0, 0], length: 0.6 },
+  { key: 'legR', name: 'Cuisse_D', parent: 'hips', position: [-0.16, 0, 0], rotation: [0, 0, 180], length: 0.62 },
+  { key: 'shinR', name: 'Mollet_D', parent: 'legR', position: [0, 0.62, 0], rotation: [0, 0, 0], length: 0.6 },
+];
+
+/** Parties du corps 3D : primitive, dimensions, décalage le long du bone. */
+type Tint = 'body' | 'head' | 'limbs' | 'eyes';
+
+const MANNEQUIN_PARTS: { bone: string; shape: PrimitiveShape; size: Vec3; offset: Vec3; tint: Tint }[] = [
+  { bone: 'hips', shape: 'box', size: [0.34, 0.18, 0.2], offset: [0, 0.04, 0], tint: 'body' },
+  { bone: 'torso', shape: 'capsule', size: [0.36, 0.56, 0.24], offset: [0, 0.24, 0], tint: 'body' },
+  { bone: 'head', shape: 'sphere', size: [0.27, 0.31, 0.27], offset: [0, 0.16, 0], tint: 'head' },
+  { bone: 'head', shape: 'sphere', size: [0.045, 0.06, 0.03], offset: [0.055, 0.18, 0.123], tint: 'eyes' },
+  { bone: 'head', shape: 'sphere', size: [0.045, 0.06, 0.03], offset: [-0.055, 0.18, 0.123], tint: 'eyes' },
+  { bone: 'armL', shape: 'capsule', size: [0.1, 0.4, 0.1], offset: [0, 0.16, 0], tint: 'limbs' },
+  { bone: 'forearmL', shape: 'capsule', size: [0.09, 0.36, 0.09], offset: [0, 0.15, 0], tint: 'limbs' },
+  { bone: 'forearmL', shape: 'sphere', size: [0.1, 0.11, 0.08], offset: [0, 0.32, 0], tint: 'head' },
+  { bone: 'armR', shape: 'capsule', size: [0.1, 0.4, 0.1], offset: [0, 0.16, 0], tint: 'limbs' },
+  { bone: 'forearmR', shape: 'capsule', size: [0.09, 0.36, 0.09], offset: [0, 0.15, 0], tint: 'limbs' },
+  { bone: 'forearmR', shape: 'sphere', size: [0.1, 0.11, 0.08], offset: [0, 0.32, 0], tint: 'head' },
+  { bone: 'legL', shape: 'capsule', size: [0.15, 0.54, 0.15], offset: [0, 0.23, 0], tint: 'limbs' },
+  { bone: 'shinL', shape: 'capsule', size: [0.12, 0.52, 0.12], offset: [0, 0.22, 0], tint: 'limbs' },
+  { bone: 'shinL', shape: 'box', size: [0.11, 0.07, 0.24], offset: [0, 0.45, 0.06], tint: 'body' },
+  { bone: 'legR', shape: 'capsule', size: [0.15, 0.54, 0.15], offset: [0, 0.23, 0], tint: 'limbs' },
+  { bone: 'shinR', shape: 'capsule', size: [0.12, 0.52, 0.12], offset: [0, 0.22, 0], tint: 'limbs' },
+  { bone: 'shinR', shape: 'box', size: [0.11, 0.07, 0.24], offset: [0, 0.45, 0.06], tint: 'body' },
+];
+
+/** Parties du pantin 2D : sprite, dimensions, décalage, ordre d'affichage. */
+const PANTIN_PARTS: { bone: string; size: [number, number]; offset: [number, number]; shape: 'rounded' | 'ellipse'; layer: number; tint: Tint }[] = [
+  { bone: 'armR', size: [0.22, 0.52], offset: [0, 0.2], shape: 'rounded', layer: -2, tint: 'limbs' },
+  { bone: 'forearmR', size: [0.2, 0.5], offset: [0, 0.2], shape: 'rounded', layer: -2, tint: 'limbs' },
+  { bone: 'forearmR', size: [0.24, 0.24], offset: [0, 0.44], shape: 'ellipse', layer: -2, tint: 'head' },
+  { bone: 'legR', size: [0.28, 0.72], offset: [0, 0.3], shape: 'rounded', layer: -1, tint: 'limbs' },
+  { bone: 'shinR', size: [0.24, 0.7], offset: [0, 0.28], shape: 'rounded', layer: -1, tint: 'limbs' },
+  { bone: 'shinR', size: [0.36, 0.2], offset: [0, 0.6], shape: 'ellipse', layer: -1, tint: 'body' },
+  { bone: 'legL', size: [0.28, 0.72], offset: [0, 0.3], shape: 'rounded', layer: 0, tint: 'limbs' },
+  { bone: 'shinL', size: [0.24, 0.7], offset: [0, 0.28], shape: 'rounded', layer: 0, tint: 'limbs' },
+  { bone: 'shinL', size: [0.36, 0.2], offset: [0, 0.6], shape: 'ellipse', layer: 0, tint: 'body' },
+  { bone: 'hips', size: [0.55, 0.38], offset: [0, 0.05], shape: 'rounded', layer: 1, tint: 'body' },
+  { bone: 'torso', size: [0.75, 1.1], offset: [0, 0.42], shape: 'rounded', layer: 2, tint: 'body' },
+  { bone: 'head', size: [0.75, 0.75], offset: [0, 0.32], shape: 'ellipse', layer: 3, tint: 'head' },
+  { bone: 'head', size: [0.09, 0.13], offset: [0.14, 0.36], shape: 'ellipse', layer: 5, tint: 'eyes' },
+  { bone: 'head', size: [0.09, 0.13], offset: [-0.14, 0.36], shape: 'ellipse', layer: 5, tint: 'eyes' },
+  { bone: 'armL', size: [0.22, 0.52], offset: [0, 0.2], shape: 'rounded', layer: 4, tint: 'limbs' },
+  { bone: 'forearmL', size: [0.2, 0.5], offset: [0, 0.2], shape: 'rounded', layer: 4, tint: 'limbs' },
+  { bone: 'forearmL', size: [0.24, 0.24], offset: [0, 0.44], shape: 'ellipse', layer: 4, tint: 'head' },
 ];
 
 export interface RigIds {
@@ -186,7 +238,9 @@ export interface RigIds {
 
 /**
  * Crée un personnage complet : groupe, corps (mesh / sprite) lié au
- * squelette, Skeleton3D / Skeleton2D et ses bones, AnimationPlayer.
+ * squelette (skinning pondéré par défaut), Skeleton3D / Skeleton2D et ses
+ * 11 bones (bras et jambes en deux segments, compatibles IK),
+ * AnimationPlayer.
  */
 export function buildCharacter(
   nodes: Record<string, SceneNode>,
@@ -194,8 +248,9 @@ export function buildCharacter(
   dimension: SceneDimension,
   name: string,
   position: Vec3,
-  palette: { body: string; head: string; limbs: string },
+  palette: { body: string; head: string; limbs: string; eyes?: string },
   fixedIds?: (key: string) => string,
+  options: { deformation?: 'rigid' | 'weighted'; withPlayer?: boolean } = {},
 ): RigIds {
   const id = (key: string, prefix: string) => (fixedIds ? fixedIds(key) : uid(prefix));
   const specs = dimension === '3d' ? MANNEQUIN_BONES : PANTIN_BONES;
@@ -207,35 +262,21 @@ export function buildCharacter(
   const skeleton = makeNode(
     'skeleton',
     dimension === '3d' ? 'Skeleton3D' : 'Skeleton2D',
-    { skeleton: { showBones: true, deformation: 'rigid', boneColor: '#fdcf7b' } },
+    { skeleton: { showBones: true, deformation: options.deformation ?? 'weighted', boneColor: '#fdcf7b' } },
     id('skeleton', 'skl'),
   );
 
   const bones: Record<string, string> = {};
   for (const spec of specs) bones[spec.key] = id(`bone-${spec.key}`, 'bon');
 
-  const color = (key: string) => (key === 'head' ? palette.head : key === 'torso' || key === 'hips' ? palette.body : palette.limbs);
-
   if (dimension === '3d') {
-    const partShape: Record<string, { shape: PrimitiveShape; size: Vec3 }> = {
-      hips: { shape: 'box', size: [0.34, 0.16, 0.2] },
-      torso: { shape: 'capsule', size: [0.36, 0.5, 0.24] },
-      head: { shape: 'sphere', size: [0.27, 0.31, 0.27] },
-      armL: { shape: 'capsule', size: [0.1, 0.62, 0.1] },
-      armR: { shape: 'capsule', size: [0.1, 0.62, 0.1] },
-      legL: { shape: 'capsule', size: [0.13, 0.88, 0.13] },
-      legR: { shape: 'capsule', size: [0.13, 0.88, 0.13] },
-    };
-    const parts: RigPart[] = specs.map((spec) => {
-      const part = partShape[spec.key]!;
-      return {
-        boneId: bones[spec.key]!,
-        shape: part.shape,
-        size: part.size,
-        offset: [0, spec.key === 'hips' ? 0.04 : spec.key === 'head' ? 0.16 : spec.length / 2, 0],
-        color: color(spec.key),
-      };
-    });
+    const parts: RigPart[] = MANNEQUIN_PARTS.map((part) => ({
+      boneId: bones[part.bone]!,
+      shape: part.shape,
+      size: [...part.size],
+      offset: [...part.offset],
+      color: part.tint === 'eyes' ? (palette.eyes ?? '#2a1a12') : palette[part.tint],
+    }));
     attach(
       nodes,
       makeNode(
@@ -247,24 +288,14 @@ export function buildCharacter(
       character.id,
     );
   } else {
-    const partSize: Record<string, [number, number]> = {
-      hips: [0.55, 0.35],
-      torso: [0.75, 1.05],
-      head: [0.75, 0.75],
-      armL: [0.22, 0.85],
-      armR: [0.22, 0.85],
-      legL: [0.26, 1.25],
-      legR: [0.26, 1.25],
-    };
-    const layer: Record<string, number> = { armR: -1, legR: -1, hips: 1, legL: 0, torso: 2, head: 3, armL: 4 };
-    const parts: SpritePart[] = specs.map((spec) => ({
-      boneId: bones[spec.key]!,
-      width: partSize[spec.key]![0],
-      height: partSize[spec.key]![1],
-      offset: [0, spec.key === 'hips' ? 0.05 : spec.key === 'head' ? 0.32 : spec.length / 2],
-      color: color(spec.key),
-      shape: spec.key === 'head' ? 'ellipse' : 'rounded',
-      layer: layer[spec.key] ?? 0,
+    const parts: SpritePart[] = PANTIN_PARTS.map((part) => ({
+      boneId: bones[part.bone]!,
+      width: part.size[0],
+      height: part.size[1],
+      offset: [...part.offset],
+      color: part.tint === 'eyes' ? (palette.eyes ?? '#2a1a12') : palette[part.tint],
+      shape: part.shape,
+      layer: part.layer,
     }));
     attach(
       nodes,
@@ -285,16 +316,28 @@ export function buildCharacter(
     const bone = makeNode(
       'bone',
       spec.name,
-      { transform: transform(spec.position, spec.rotation), bone: { length: spec.length, color: '#fdcf7b' } },
+      { transform: transform([...spec.position], [...spec.rotation]), bone: { length: spec.length, color: '#fdcf7b' } },
       bones[spec.key],
     );
     attach(nodes, bone, spec.parent ? bones[spec.parent]! : skeleton.id);
   }
 
-  const player = makeNode('animationPlayer', 'AnimationPlayer', {}, id('player', 'anp'));
-  attach(nodes, player, character.id);
+  let playerId = '';
+  if (options.withPlayer !== false) {
+    const player = makeNode('animationPlayer', 'AnimationPlayer', {}, id('player', 'anp'));
+    attach(nodes, player, character.id);
+    playerId = player.id;
+  }
 
-  return { characterId: character.id, skeletonId: skeleton.id, bodyId, playerId: player.id, bones };
+  return { characterId: character.id, skeletonId: skeleton.id, bodyId, playerId, bones };
+}
+
+/** Point de contrôle IK : l'extrémité de `endBoneKey` (avant-bras, tibia) rejoint le point. */
+export function makeIkTarget(name: string, position: Vec3, endBoneId: string, bend: 1 | -1, id?: string): SceneNode {
+  const node = makeControl(name, position);
+  if (id) node.id = id;
+  node.control = { radius: 0.1, influence: 1, constraint: 'ik', targetBoneId: endBoneId, bend };
+  return node;
 }
 
 /* -------------------------------------------------------------------------

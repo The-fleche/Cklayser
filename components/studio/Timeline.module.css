@@ -238,8 +238,13 @@
   white-space: nowrap;
 }
 
-.emptyName {
+.emptyName,
+.emptyLane {
   height: 60px;
+}
+
+.emptyLane {
+  overflow: hidden;
 }
 
 .tracksColumn {
@@ -376,7 +381,7 @@
   position: sticky;
   left: 0;
   max-width: 520px;
-  padding: 16px 18px;
+  padding: 10px 18px;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   line-height: 1.6;
@@ -624,4 +629,106 @@
   .names {
     width: 160px;
   }
+}
+
+/* ----- Pistes audio ------------------------------------------------------ */
+.audioHeader {
+  gap: 6px;
+  padding-left: 8px;
+  border-top: 1px solid var(--studio-border);
+}
+
+.audioIcon {
+  flex: none;
+  color: var(--color-clay);
+}
+
+.audioAdd {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  border-radius: 4px;
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+}
+
+.audioAdd:hover,
+.audioAdd[aria-expanded='true'] {
+  background-color: var(--color-action-hover);
+}
+
+.audioName {
+  gap: 4px;
+  padding-left: 12px;
+}
+
+.audioButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--color-icon-muted);
+}
+
+.audioButton:hover {
+  background-color: var(--studio-surface-hover);
+  color: var(--color-text);
+}
+
+.audioButton[aria-pressed='true'] {
+  color: var(--color-clay);
+}
+
+.volume {
+  flex: none;
+  width: 44px;
+  accent-color: var(--color-action);
+}
+
+.audioLane {
+  background-color: rgb(var(--color-clay-rgb) / 0.04);
+}
+
+.audioBlock {
+  position: absolute;
+  top: 2px;
+  height: 19px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-clay-rgb) / 0.7);
+  border-radius: 4px;
+  background-color: rgb(var(--color-clay-rgb) / 0.22);
+  color: var(--color-clay);
+  cursor: grab;
+  touch-action: none;
+}
+
+.audioBlock:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.audioMuted {
+  opacity: 0.4;
+}
+
+.wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: rgb(var(--color-clay-rgb) / 0.85);
+}
+
+.audioLabel {
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  color: var(--color-text);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgb(var(--color-overlay-rgb) / 0.9);
+  white-space: nowrap;
 }

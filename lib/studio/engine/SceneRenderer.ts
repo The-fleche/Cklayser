@@ -44,6 +44,12 @@ export interface RenderInput {
   editorProjection: Projection;
   settings: StudioSettings;
   readOnly?: boolean;
+  /** Lecteur public : transition au changement de caméra de scène. */
+  cameraTransition?: { type: 'cut' | 'fade' | 'blend'; duration: number };
+  /** Lecteur public : caméra libre du spectateur (scènes 3D), bornée par la scène. */
+  freeCamera?: boolean;
+  /** Marge autour du cadre de la caméra (0 dans le lecteur plein cadre). */
+  frameMargin?: number;
 }
 
 export interface RendererCallbacks {
@@ -63,6 +69,10 @@ interface Entry {
   camera?: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   light?: THREE.Light;
   skinParts: THREE.Object3D[];
+  /** Squelette three.js partagé par les parties d'un corps en skinning pondéré. */
+  skeleton?: THREE.Skeleton;
+  /** Modèle glTF chargé : bones du fichier, par nom (pilotés par les bones du Studio). */
+  gltfBones?: Map<string, { object: THREE.Object3D; rootInverse?: THREE.Matrix4 }>;
 }
 
 export interface FrameRect {
@@ -119,6 +129,12 @@ export class SceneRenderer {
   private boneGeo3 = boneGeometry3D();
   private boneGeo2 = boneGeometry2D();
   private sceneId: string | null = null;
+  /** Transition « mouvement fluide » entre deux caméras de scène. */
+  private blend: { from: THREE.Camera; start: number; duration: number } | null = null;
+  private blendCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera | null = null;
+  /** Caméra libre du spectateur (lecteur public). */
+  private readonly freeCam = new THREE.PerspectiveCamera(40, 16 / 9, 0.05, 400);
+  private freeOrbit: OrbitControls | null = null;
 
   constructor(host: HTMLElement, callbacks: RendererCallbacks) {
     this.host = host;
@@ -205,6 +221,8 @@ export class SceneRenderer {
       this.needsRender = true;
     }
     const orbitMoved = this.orbit.enabled ? this.orbit.update() : false;
+    if (this.freeOrbit?.update()) this.needsRender = true;
+    if (this.blend) this.needsRender = true;
     if (orbitMoved || this.needsRender) {
       this.needsRender = false;
       this.render();
@@ -250,6 +268,7 @@ export class SceneRenderer {
     element.removeEventListener('wheel', this.onWheel);
     this.gizmo.dispose();
     this.orbit.dispose();
+    this.freeOrbit?.dispose();
     this.viewHelper.dispose();
     for (const entry of this.entries.values()) disposeObject(entry.root);
     this.boneGeo2.dispose();
@@ -279,6 +298,11 @@ export class SceneRenderer {
         if (this.gizmo.controls.object === entry.root) this.gizmo.controls.detach();
         entry.root.removeFromParent();
         disposeObject(entry.root);
+        entry.skinParts.forEach((part) => {
+          part.removeFromParent();
+          disposeObject(part);
+        });
+        entry.skeleton?.dispose();
         this.entries.delete(id);
       }
     }
@@ -314,8 +338,10 @@ export class SceneRenderer {
     }
     this.world.updateMatrixWorld(true);
 
-    // 5. Contraintes des points de contrôle (orientation des bones).
+    // 5. Contraintes des points de contrôle (Viser, IK à deux bones), puis
+    //    bones des modèles glTF pilotés par ceux du Studio.
     this.applyConstraints(scene);
+    this.driveModels(scene);
 
     // 6. Mise en évidence de la sélection et gizmo.
     this.updateSelection(input);
@@ -324,6 +350,19 @@ export class SceneRenderer {
     this.grid.visible = input.settings.grid && !preview;
     this.updateFreeCameraBounds(scene, input);
     this.scene3.background = new THREE.Color(scene.background);
+
+    // Lecteur : transition fluide vers la nouvelle caméra de scène.
+    if (previous && previous.viewCameraId !== input.viewCameraId && input.cameraTransition?.type === 'blend' && previous.viewCameraId) {
+      const from = this.entries.get(previous.viewCameraId)?.camera;
+      if (from) {
+        const snapshot = from.clone();
+        from.getWorldPosition(snapshot.position);
+        from.getWorldQuaternion(snapshot.quaternion);
+        snapshot.updateMatrixWorld(true);
+        this.blend = { from: snapshot, start: performance.now(), duration: Math.max(0.1, input.cameraTransition.duration) * 1000 };
+      }
+    }
+    this.syncFreeCamera(previous, input);
 
     if (!previous || previous.viewMode !== input.viewMode || previous.viewCameraId !== input.viewCameraId) {
       this.orbit.enabled = input.viewMode === 'edit' && !this.gizmo.dragging;
@@ -586,7 +625,8 @@ export class SceneRenderer {
 
     if (node.kind === 'model' && node.model) {
       const url = input.assets.find((asset) => asset.id === node.model!.assetId)?.url;
-      if (url) this.loadModel(url, entry, node.id);
+      const asset = input.assets.find((item) => item.id === node.model!.assetId);
+      if (url) this.loadModel(url, entry, node.id, asset?.fit);
       else {
         const placeholder = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), new THREE.MeshBasicMaterial({ color: this.theme.control, wireframe: true }));
         placeholder.position.y = 0.3;
@@ -608,7 +648,7 @@ export class SceneRenderer {
     return mesh;
   }
 
-  private loadModel(url: string, entry: Entry, nodeId: string): void {
+  private loadModel(url: string, entry: Entry, nodeId: string, fit?: { scale: number; offsetY: number }): void {
     let promise = gltfCache.get(url);
     if (!promise) {
       promise = new GLTFLoader().loadAsync(url);
@@ -618,21 +658,39 @@ export class SceneRenderer {
       .then((gltf) => {
         if (this.disposed || this.entries.get(nodeId) !== entry) return;
         const model = cloneSkinned(gltf.scene);
-        // Mise à l'échelle automatique des modèles très grands ou très petits.
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const largest = Math.max(size.x, size.y, size.z);
-        if (largest > 0 && (largest > 8 || largest < 0.2)) model.scale.multiplyScalar(1.8 / largest);
-        const fitted = new THREE.Box3().setFromObject(model);
-        model.position.y -= fitted.min.y;
+        // Bones du fichier : les bones racines gardent l'inverse de leur parent
+        // (nœuds non-bones du fichier) pour être pilotés dans le repère du modèle.
+        model.updateMatrixWorld(true);
+        const bones = new Map<string, { object: THREE.Object3D; rootInverse?: THREE.Matrix4 }>();
+        model.traverse((child) => {
+          if (!(child as THREE.Bone).isBone || bones.has(child.name)) return;
+          const parentIsBone = Boolean((child.parent as THREE.Bone | null)?.isBone);
+          const rootInverse = !parentIsBone && child.parent ? child.parent.matrixWorld.clone().invert() : undefined;
+          bones.set(child.name, { object: child, rootInverse });
+        });
+        entry.gltfBones = bones;
+        // Cadrage : celui calculé à l'import (identique au squelette du Studio), sinon automatique.
+        if (fit) {
+          model.scale.setScalar(fit.scale);
+          model.position.y = fit.offsetY;
+        } else {
+          const box = new THREE.Box3().setFromObject(model);
+          const size = box.getSize(new THREE.Vector3());
+          const largest = Math.max(size.x, size.y, size.z);
+          if (largest > 0 && (largest > 8 || largest < 0.2)) model.scale.multiplyScalar(1.8 / largest);
+          const fitted = new THREE.Box3().setFromObject(model);
+          model.position.y -= fitted.min.y;
+        }
         model.traverse((child) => {
           child.userData.nodeId = nodeId;
           if ((child as THREE.Mesh).isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
+            child.frustumCulled = false;
           }
         });
         entry.content.add(model);
+        if (this.input) this.update(this.input);
         this.invalidate();
       })
       .catch(() => {
@@ -643,14 +701,82 @@ export class SceneRenderer {
       });
   }
 
-  /** Parties rigides d'un corps attachées à chaque bone de son squelette. */
+  /** Copie la pose des bones du Studio dans les bones des modèles glTF (rig importé). */
+  private driveModels(scene: StudioScene): void {
+    const matrix = new THREE.Matrix4();
+    for (const node of Object.values(scene.nodes)) {
+      const map = node.model?.boneMap;
+      const entry = map ? this.entries.get(node.id) : undefined;
+      if (!map || !entry?.gltfBones) continue;
+      for (const [name, boneId] of Object.entries(map)) {
+        const target = entry.gltfBones.get(name);
+        const source = this.entries.get(boneId)?.root;
+        if (!target || !source) continue;
+        source.updateMatrix();
+        if (target.rootInverse) {
+          matrix.multiplyMatrices(target.rootInverse, source.matrix);
+          matrix.decompose(target.object.position, target.object.quaternion, target.object.scale);
+        } else {
+          target.object.position.copy(source.position);
+          target.object.quaternion.copy(source.quaternion);
+          target.object.scale.copy(source.scale);
+        }
+      }
+      entry.content.updateMatrixWorld(true);
+    }
+  }
+
+  /** Matrices de repos (pose sans animation) des bones d'un squelette, dans son repère. */
+  private restPose(scene: StudioScene, skeletonId: string): { bones: SceneNode[]; rest: Map<string, THREE.Matrix4> } {
+    const bones: SceneNode[] = [];
+    const rest = new Map<string, THREE.Matrix4>();
+    const local = (node: SceneNode) => {
+      const [px, py, pz] = node.transform.position;
+      const [rx, ry, rz] = node.transform.rotation;
+      const [sx, sy, sz] = node.transform.scale;
+      return new THREE.Matrix4().compose(
+        new THREE.Vector3(px, py, pz),
+        new THREE.Quaternion().setFromEuler(new THREE.Euler(rx * DEG, ry * DEG, rz * DEG, 'YXZ')),
+        new THREE.Vector3(sx || 1, sy || 1, sz || 1),
+      );
+    };
+    const walk = (id: string, parent: THREE.Matrix4) => {
+      const node = scene.nodes[id];
+      if (!node) return;
+      for (const childId of node.children) {
+        const child = scene.nodes[childId];
+        if (!child || child.kind !== 'bone') continue;
+        const matrix = parent.clone().multiply(local(child));
+        bones.push(child);
+        rest.set(child.id, matrix);
+        walk(child.id, matrix);
+      }
+    };
+    walk(skeletonId, new THREE.Matrix4());
+    return { bones, rest };
+  }
+
+  /**
+   * Corps lié à un squelette.
+   *  - rigide : chaque partie est enfant de son bone ;
+   *  - pondéré : chaque partie devient un SkinnedMesh partageant un même
+   *    THREE.Skeleton (les objets des bones du Studio). Les poids de chaque
+   *    sommet sont calculés automatiquement à partir de sa distance aux
+   *    segments du bone propriétaire, de son parent et de ses enfants
+   *    (pondération inverse de la distance à la puissance 4, 4 influences
+   *    max.) : les articulations se plient en continu.
+   */
   private syncSkin(node: SceneNode, input: RenderInput): void {
     const entry = this.entries.get(node.id);
     if (!entry) return;
-    const skinSignature = JSON.stringify([node.mesh?.skin, node.sprite?.skin, node.sprite?.color, node.mesh?.color]);
-    const hasSkin = Boolean(node.mesh?.skin || node.sprite?.skin);
+    const skin = node.mesh?.skin ?? node.sprite?.skin;
+    const skeletonNode = skin ? input.scene.nodes[skin.skeletonId] : undefined;
+    const weighted = skeletonNode?.skeleton?.deformation === 'weighted';
+    const restSignature = skin && skeletonNode ? JSON.stringify(this.restPose(input.scene, skeletonNode.id).bones.map((bone) => [bone.id, bone.transform, bone.bone?.length])) : '';
+    const skinSignature = JSON.stringify([node.mesh?.skin, node.sprite?.skin, node.sprite?.color, node.sprite?.layer, node.mesh?.roughness, weighted, restSignature]);
+    const hasSkin = Boolean(skin);
     if (entry.root.userData.skinSignature === skinSignature && entry.skinParts.every((part) => part.parent)) {
-      entry.skinParts.forEach((part) => (part.visible = node.visible && isVisibleInTree(entry.root)));
+      entry.skinParts.forEach((part) => (part.visible = node.visible));
       return;
     }
     entry.root.userData.skinSignature = skinSignature;
@@ -659,9 +785,22 @@ export class SceneRenderer {
       disposeObject(part);
     });
     entry.skinParts = [];
-    if (!hasSkin) return;
+    entry.skeleton?.dispose();
+    entry.skeleton = undefined;
+    if (!hasSkin || !skin) return;
     // Clic sur le corps : sélectionne le personnage entier (parent du corps).
     const owner = node.parentId ?? node.id;
+    const tag = (mesh: THREE.Object3D, boneId: string) => {
+      mesh.userData.nodeId = owner;
+      mesh.userData.boneId = boneId;
+      mesh.userData.bodyId = node.id;
+    };
+
+    if (weighted && skeletonNode) {
+      this.buildWeightedSkin(node, skeletonNode, entry, input, tag);
+      entry.skinParts.forEach((part) => (part.visible = node.visible));
+      return;
+    }
 
     if (node.mesh?.skin) {
       for (const part of node.mesh.skin.parts) {
@@ -674,9 +813,7 @@ export class SceneRenderer {
         mesh.position.set(...part.offset);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        mesh.userData.nodeId = owner;
-        mesh.userData.boneId = part.boneId;
-        mesh.userData.bodyId = node.id;
+        tag(mesh, part.boneId);
         bone.root.add(mesh);
         entry.skinParts.push(mesh);
       }
@@ -687,14 +824,127 @@ export class SceneRenderer {
         if (!bone) continue;
         const mesh = this.makeSpriteMesh(part.width, part.height, part.color, part.shape, node.sprite.layer * 10 + part.layer, input);
         mesh.position.set(part.offset[0], part.offset[1], 0);
-        mesh.userData.nodeId = owner;
-        mesh.userData.boneId = part.boneId;
-        mesh.userData.bodyId = node.id;
+        tag(mesh, part.boneId);
         bone.root.add(mesh);
         entry.skinParts.push(mesh);
       }
     }
     entry.skinParts.forEach((part) => (part.visible = node.visible));
+  }
+
+  private buildWeightedSkin(node: SceneNode, skeletonNode: SceneNode, entry: Entry, input: RenderInput, tag: (mesh: THREE.Object3D, boneId: string) => void): void {
+    const skeletonEntry = this.entries.get(skeletonNode.id);
+    if (!skeletonEntry) return;
+    const { bones, rest } = this.restPose(input.scene, skeletonNode.id);
+    if (bones.length === 0) return;
+    const index = new Map(bones.map((bone, i) => [bone.id, i]));
+    const objects = bones.map((bone) => this.entries.get(bone.id)?.root ?? new THREE.Object3D());
+    const inverses = bones.map((bone) => rest.get(bone.id)!.clone().invert());
+    const skeleton = new THREE.Skeleton(objects as unknown as THREE.Bone[], inverses);
+    entry.skeleton = skeleton;
+
+    // Segments des bones (repère du squelette, pose de repos).
+    const segments = bones.map((bone) => {
+      const matrix = rest.get(bone.id)!;
+      return {
+        a: new THREE.Vector3().setFromMatrixPosition(matrix),
+        b: new THREE.Vector3(0, bone.bone?.length ?? 0.3, 0).applyMatrix4(matrix),
+      };
+    });
+    const point = new THREE.Vector3();
+
+    /** Bones voisins et articulation partagée avec le bone propriétaire. */
+    const neighbours = (boneId: string): { index: number; joint: THREE.Vector3 }[] => {
+      const bone = input.scene.nodes[boneId];
+      const own = index.get(boneId);
+      if (!bone || own === undefined) return [];
+      const list: { index: number; joint: THREE.Vector3 }[] = [];
+      const parentIndex = bone.parentId ? index.get(bone.parentId) : undefined;
+      if (parentIndex !== undefined) list.push({ index: parentIndex, joint: segments[own]!.a });
+      for (const childId of bone.children) {
+        const childIndex = index.get(childId);
+        if (childIndex !== undefined) list.push({ index: childIndex, joint: segments[childIndex]!.a });
+      }
+      return list;
+    };
+    const lengthOf = (i: number) => segments[i]!.a.distanceTo(segments[i]!.b) || 0.3;
+
+    /**
+     * Poids automatiques : 1 pour le bone propriétaire ; un bone voisin
+     * (parent ou enfant) n'influence que les sommets proches de
+     * l'articulation commune, avec une décroissance quadratique sur un
+     * rayon proportionnel aux longueurs des deux bones (50 / 50 au
+     * centre de l'articulation).
+     */
+    const skinGeometry = (geometry: THREE.BufferGeometry, boneId: string) => {
+      const own = index.get(boneId) ?? 0;
+      const near = neighbours(boneId);
+      const positions = geometry.getAttribute('position');
+      const skinIndex = new Uint16Array(positions.count * 4);
+      const skinWeight = new Float32Array(positions.count * 4);
+      for (let v = 0; v < positions.count; v += 1) {
+        point.fromBufferAttribute(positions, v);
+        const weights = [{ candidate: own, weight: 1 }];
+        for (const neighbour of near) {
+          const radius = Math.max(0.05, 0.38 * Math.min(lengthOf(own), lengthOf(neighbour.index)));
+          const distance = point.distanceTo(neighbour.joint);
+          if (distance < radius) weights.push({ candidate: neighbour.index, weight: (1 - distance / radius) ** 2 });
+        }
+        weights.sort((x, y) => y.weight - x.weight);
+        const top = weights.slice(0, 4);
+        const total = top.reduce((sum, item) => sum + item.weight, 0) || 1;
+        top.forEach((item, slot) => {
+          skinIndex[v * 4 + slot] = item.candidate;
+          skinWeight[v * 4 + slot] = item.weight / total;
+        });
+      }
+      geometry.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndex, 4));
+      geometry.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeight, 4));
+    };
+
+    const finish = (mesh: THREE.SkinnedMesh, boneId: string) => {
+      mesh.bind(skeleton, new THREE.Matrix4());
+      mesh.frustumCulled = false;
+      tag(mesh, boneId);
+      skeletonEntry.root.add(mesh);
+      entry.skinParts.push(mesh);
+    };
+
+    if (node.mesh?.skin) {
+      for (const part of node.mesh.skin.parts) {
+        const matrix = rest.get(part.boneId);
+        if (!matrix) continue;
+        const geometry = createGeometry(part.shape, part.size, true);
+        geometry.translate(...part.offset);
+        geometry.applyMatrix4(matrix);
+        skinGeometry(geometry, part.boneId);
+        const mesh = new THREE.SkinnedMesh(geometry, new THREE.MeshStandardMaterial({ color: part.color, roughness: node.mesh.roughness, metalness: node.mesh.metalness }));
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        finish(mesh, part.boneId);
+      }
+    }
+    if (node.sprite?.skin) {
+      for (const part of node.sprite.skin.parts) {
+        const matrix = rest.get(part.boneId);
+        if (!matrix) continue;
+        const geometry = new THREE.PlaneGeometry(part.width, part.height, 2, 14);
+        geometry.translate(part.offset[0], part.offset[1], 0);
+        geometry.applyMatrix4(matrix);
+        skinGeometry(geometry, part.boneId);
+        const material = new THREE.MeshBasicMaterial({
+          color: part.color,
+          map: spriteShapeTexture(part.shape, part.width, part.height),
+          transparent: true,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        });
+        material.toneMapped = false;
+        const mesh = new THREE.SkinnedMesh(geometry, material);
+        mesh.renderOrder = node.sprite.layer * 10 + part.layer;
+        finish(mesh, part.boneId);
+      }
+    }
   }
 
   private syncSceneCamera(node: SceneNode, entry: Entry, fov?: number, zoom?: number): void {
@@ -759,9 +1009,10 @@ export class SceneRenderer {
     const bonePos = new THREE.Vector3();
     const parentQuat = new THREE.Quaternion();
     const desired = new THREE.Quaternion();
+    // 1. Viser (orientation d'un bone vers un point).
     for (const node of Object.values(scene.nodes)) {
       const control = node.control;
-      if (node.kind !== 'control' || !control || control.constraint !== 'aim' || !control.targetBoneId || control.influence <= 0) continue;
+      if (node.kind !== 'control' || !node.visible || !control || control.constraint !== 'aim' || !control.targetBoneId || control.influence <= 0) continue;
       const bone = this.entries.get(control.targetBoneId);
       const self = this.entries.get(node.id);
       if (!bone || !self || !bone.root.parent) continue;
@@ -776,9 +1027,79 @@ export class SceneRenderer {
       desired.setFromUnitVectors(axis, direction.normalize());
       desired.premultiply(parentQuat.invert());
       bone.root.quaternion.slerp(desired, Math.min(1, control.influence));
+      bone.root.updateMatrixWorld(true);
       changed = true;
     }
+    // 2. Cinématique inverse à deux bones.
+    for (const node of Object.values(scene.nodes)) {
+      const control = node.control;
+      if (node.kind !== 'control' || !node.visible || !control || control.constraint !== 'ik' || !control.targetBoneId || control.influence <= 0) continue;
+      if (this.solveTwoBoneIk(scene, node)) changed = true;
+    }
     if (changed) this.world.updateMatrixWorld(true);
+  }
+
+  /** Fait pivoter `object` d'une rotation exprimée dans le repère monde (mélangée selon l'influence). */
+  private rotateInWorld(object: THREE.Object3D, rotation: THREE.Quaternion, influence: number): void {
+    if (!object.parent) return;
+    const world = object.getWorldQuaternion(new THREE.Quaternion());
+    const targetWorld = rotation.clone().multiply(world);
+    const parent = object.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
+    const local = parent.multiply(targetWorld);
+    object.quaternion.slerp(local, Math.min(1, influence));
+    object.updateMatrixWorld(true);
+  }
+
+  /**
+   * IK analytique à deux bones (loi des cosinus) : bone racine (bras,
+   * cuisse) = parent du bone ciblé ; bone de bout (avant-bras, tibia) =
+   * bone ciblé. Le plan de pliage suit l'axe Z du bone racine (3D) ou son
+   * axe X (2D), orienté par `bend`. La longueur de la chaîne est respectée
+   * (cible hors de portée : bras tendu vers elle).
+   */
+  private solveTwoBoneIk(scene: StudioScene, controlNode: SceneNode): boolean {
+    const control = controlNode.control!;
+    const endNode = scene.nodes[control.targetBoneId!];
+    const upperNode = endNode?.parentId ? scene.nodes[endNode.parentId] : undefined;
+    if (!endNode || endNode.kind !== 'bone' || !upperNode || upperNode.kind !== 'bone') return false;
+    const end = this.entries.get(endNode.id)?.root;
+    const upper = this.entries.get(upperNode.id)?.root;
+    const self = this.entries.get(controlNode.id)?.root;
+    if (!end || !upper || !self) return false;
+    const is2d = this.dimension === '2d';
+
+    const A = upper.getWorldPosition(new THREE.Vector3());
+    const B = end.getWorldPosition(new THREE.Vector3());
+    const C = end.localToWorld(new THREE.Vector3(0, endNode.bone?.length ?? 0.3, 0));
+    const T = self.getWorldPosition(new THREE.Vector3());
+    if (is2d) T.z = A.z;
+    const a = A.distanceTo(B);
+    const b = B.distanceTo(C);
+    if (a < 1e-5 || b < 1e-5) return false;
+    const toTarget = T.clone().sub(A);
+    const d = THREE.MathUtils.clamp(toTarget.length(), Math.abs(a - b) + 1e-4, a + b - 1e-4);
+    const dir = toTarget.lengthSq() > 1e-10 ? toTarget.normalize() : B.clone().sub(A).normalize();
+
+    // Direction de pliage.
+    const axis = new THREE.Vector3().setFromMatrixColumn(upper.matrixWorld, is2d ? 0 : 2).normalize().multiplyScalar(control.bend ?? 1);
+    const pole = axis.sub(dir.clone().multiplyScalar(axis.dot(dir)));
+    if (pole.lengthSq() < 1e-8) pole.set(1, 0, 0).sub(dir.clone().multiplyScalar(dir.x));
+    pole.normalize();
+
+    const cosA = THREE.MathUtils.clamp((a * a + d * d - b * b) / (2 * a * d), -1, 1);
+    const sinA = Math.sqrt(1 - cosA * cosA);
+    const elbow = A.clone().add(dir.clone().multiplyScalar(cosA * a).add(pole.clone().multiplyScalar(sinA * a)));
+    const reach = A.clone().add(dir.clone().multiplyScalar(d));
+
+    const influence = control.influence;
+    const upperRotation = new THREE.Quaternion().setFromUnitVectors(B.clone().sub(A).normalize(), elbow.clone().sub(A).normalize());
+    this.rotateInWorld(upper, upperRotation, influence);
+
+    const B2 = end.getWorldPosition(new THREE.Vector3());
+    const C2 = end.localToWorld(new THREE.Vector3(0, endNode.bone?.length ?? 0.3, 0));
+    const endRotation = new THREE.Quaternion().setFromUnitVectors(C2.clone().sub(B2).normalize(), reach.sub(B2).normalize());
+    this.rotateInWorld(end, endRotation, influence);
+    return true;
   }
 
   private updateSelection(input: RenderInput): void {
@@ -863,6 +1184,79 @@ export class SceneRenderer {
      Rendu
      ====================================================================== */
 
+  /** Caméra intermédiaire d'une transition fluide (position, orientation, optique). */
+  private blendedCamera(target: THREE.PerspectiveCamera | THREE.OrthographicCamera): THREE.Camera {
+    const blend = this.blend!;
+    const raw = Math.min(1, (performance.now() - blend.start) / blend.duration);
+    if (raw >= 1) {
+      this.blend = null;
+      return target;
+    }
+    const t = raw < 0.5 ? 4 * raw ** 3 : 1 - (-2 * raw + 2) ** 3 / 2;
+    if (!this.blendCamera || this.blendCamera.type !== target.type) this.blendCamera = target.clone();
+    const camera = this.blendCamera;
+    const position = target.getWorldPosition(new THREE.Vector3());
+    const quaternion = target.getWorldQuaternion(new THREE.Quaternion());
+    camera.position.copy(blend.from.position).lerp(position, t);
+    camera.quaternion.copy(blend.from.quaternion).slerp(quaternion, t);
+    if (camera instanceof THREE.PerspectiveCamera && target instanceof THREE.PerspectiveCamera) {
+      const fromFov = blend.from instanceof THREE.PerspectiveCamera ? blend.from.fov : target.fov;
+      camera.fov = fromFov + (target.fov - fromFov) * t;
+      camera.aspect = target.aspect;
+      camera.near = target.near;
+      camera.far = target.far;
+    } else if (camera instanceof THREE.OrthographicCamera && target instanceof THREE.OrthographicCamera) {
+      const from = blend.from instanceof THREE.OrthographicCamera ? blend.from : target;
+      camera.left = from.left + (target.left - from.left) * t;
+      camera.right = from.right + (target.right - from.right) * t;
+      camera.top = from.top + (target.top - from.top) * t;
+      camera.bottom = from.bottom + (target.bottom - from.bottom) * t;
+      camera.near = target.near;
+      camera.far = target.far;
+    }
+    camera.layers.set(0);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
+    this.needsRender = true;
+    return camera;
+  }
+
+  /** Caméra libre du spectateur : orbite autour de la cible, dans les limites de la scène. */
+  private syncFreeCamera(previous: RenderInput | null, input: RenderInput): void {
+    const wanted = Boolean(input.freeCamera) && input.scene.dimension === '3d';
+    if (!wanted) {
+      if (this.freeOrbit) {
+        this.freeOrbit.dispose();
+        this.freeOrbit = null;
+      }
+      return;
+    }
+    const settings = input.scene.viewer.freeCamera;
+    if (!this.freeOrbit) {
+      // Départ : la position de la caméra courante, ramenée dans les limites.
+      const start = input.viewCameraId ? this.entries.get(input.viewCameraId)?.camera : undefined;
+      if (start) start.getWorldPosition(this.freeCam.position);
+      else this.freeCam.position.set(4, 3, 6);
+      this.freeOrbit = new OrbitControls(this.freeCam, this.renderer.domElement);
+      this.freeOrbit.enableDamping = true;
+      this.freeOrbit.enablePan = false;
+      this.freeOrbit.addEventListener('change', () => this.invalidate());
+    }
+    const orbit = this.freeOrbit;
+    orbit.target.set(...settings.target);
+    orbit.minDistance = settings.minDistance;
+    orbit.maxDistance = settings.maxDistance;
+    orbit.minPolarAngle = settings.minPolar * DEG;
+    orbit.maxPolarAngle = settings.maxPolar * DEG;
+    const data = input.viewCameraId ? input.scene.nodes[input.viewCameraId]?.camera : undefined;
+    this.freeCam.fov = data?.fov ?? 40;
+    this.freeCam.aspect = data?.aspect ?? 16 / 9;
+    this.freeCam.layers.set(0);
+    this.freeCam.updateProjectionMatrix();
+    orbit.update();
+    if (!previous?.freeCamera) this.invalidate();
+  }
+
   /** Caméra de scène utilisée par les modes caméra / aperçu. */
   private viewCamera(): THREE.PerspectiveCamera | THREE.OrthographicCamera | null {
     const input = this.input;
@@ -878,7 +1272,7 @@ export class SceneRenderer {
   getFrameRect(aspect: number): FrameRect {
     const width = this.width;
     const height = this.height;
-    const margin = 16;
+    const margin = this.input?.frameMargin ?? 16;
     const availableW = width - margin * 2;
     const availableH = height - margin * 2;
     let frameW = availableW;
@@ -899,7 +1293,9 @@ export class SceneRenderer {
     renderer.clear();
     if (!input) return;
 
-    const viewCamera = this.viewCamera();
+    let viewCamera: THREE.Camera | null = this.viewCamera();
+    if (input.freeCamera && this.freeOrbit && this.dimension === '3d') viewCamera = this.freeCam;
+    else if (viewCamera && this.blend) viewCamera = this.blendedCamera(viewCamera as THREE.PerspectiveCamera | THREE.OrthographicCamera);
     if (viewCamera) {
       const data = input.scene.nodes[input.viewCameraId!]?.camera;
       const rect = this.getFrameRect(data?.aspect ?? 16 / 9);

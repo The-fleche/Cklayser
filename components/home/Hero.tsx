@@ -16,7 +16,8 @@
  *    (Episode.teaser), sinon slide.video. Muette, lancée automatiquement,
  *    en boucle ; lecture seulement sur la diapositive active, arrêtée par
  *    le bouton pause, l'onglet masqué ou le mouvement réduit ;
- *  - « Regarder maintenant » mène à ce dernier épisode ;
+ *  - « Regarder maintenant » mène à la page de présentation de la série
+ *    (choix de l'épisode), pas directement au dernier épisode ;
  *  - bouton son en haut à droite (diapositive vidéo) : la vidéo démarre
  *    muette (exigence des navigateurs pour la lecture automatique) ; le
  *    bouton active ou coupe le son, et ce choix vaut pour toute la visite ;
@@ -59,7 +60,8 @@ const slides: ResolvedSlide[] = heroSlides.flatMap((slide) => {
     {
       slide: teaser ? { ...slide, video: teaser.src, image: teaser.poster } : slide,
       series,
-      watchHref: latest ? `/serie/${series.id}?episode=${latest.number}` : `/serie/${series.id}`,
+      // Page de présentation de la série : le spectateur choisit son épisode.
+      watchHref: `/serie/${series.id}`,
     },
   ];
 });

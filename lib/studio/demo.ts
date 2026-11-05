@@ -9,7 +9,7 @@
  *
  * Les identifiants sont fixes pour que la démo soit reproductible (tests).
  */
-import { attach, buildCharacter, key, lookAtRotation, makeCamera, makeClip, makeControl, makeLight, makeMesh, makeNode, makeSprite, track } from './factory';
+import { attach, buildCharacter, key, lookAtRotation, makeCamera, makeClip, makeControl, makeIkTarget, makeLight, makeMesh, makeNode, makeSprite, track } from './factory';
 import type { SceneNode, StudioAsset, StudioProject, StudioScene, Vec3 } from './types';
 
 function atelierScene(): StudioScene {
@@ -58,6 +58,14 @@ function atelierScene(): StudioScene {
   gaze.control!.influence = 0;
   gaze.control!.aimAxis = 'z';
   attach(nodes, gaze, rig.skeletonId);
+  // Cinématique inverse : la main gauche suit un point animé, les pieds restent
+  // plantés au sol quand le bassin s'abaisse (genoux pliés par l'IK).
+  const handTarget = makeIkTarget('IK_Main_G', [0.36, 0.92, 0.02], rig.bones.forearmL!, -1, 'aelith-ik-hand');
+  attach(nodes, handTarget, rig.skeletonId);
+  const footL = makeIkTarget('IK_Pied_G', [0.11, 0.04, 0.02], rig.bones.shinL!, 1, 'aelith-ik-foot-l');
+  attach(nodes, footL, rig.skeletonId);
+  const footR = makeIkTarget('IK_Pied_D', [-0.11, 0.04, 0.02], rig.bones.shinR!, 1, 'aelith-ik-foot-r');
+  attach(nodes, footR, rig.skeletonId);
 
   const props = makeNode('group', 'Props', {}, 'atelier-props');
   attach(nodes, props, world.id);
@@ -91,6 +99,9 @@ function atelierScene(): StudioScene {
   clip.tracks = [
     track(rig.characterId, 'position', [key(0, [-0.6, 0, 0.3]), key(96, [-0.1, 0, 0.6])]),
     track(rig.bones.torso!, 'rotation', [key(0, [0, 0, 0]), key(48, [6, 14, 0]), key(96, [0, 0, 0])]),
+    track(rig.bones.hips!, 'position', [key(0, [0, 0.95, 0]), key(40, [0, 0.83, 0.03]), key(72, [0, 0.83, 0.03]), key(96, [0, 0.95, 0])]),
+    track(handTarget.id, 'position', [key(0, [0.36, 0.92, 0.02]), key(40, [0.3, 1.28, 0.38]), key(70, [0.16, 1.08, 0.42]), key(96, [0.36, 0.92, 0.02])]),
+    track(rig.bones.forearmR!, 'rotation', [key(0, [0, 0, 0]), key(20, [0, 0, 28]), key(32, [0, 0, 10]), key(44, [0, 0, 30]), key(56, [0, 0, 8]), key(78, [0, 0, 0])]),
     track(rig.bones.head!, 'rotation', [key(0, [0, 0, 0]), key(28, [-4, -28, 0]), key(60, [8, 22, 4]), key(96, [0, 0, 0])]),
     track(rig.bones.armR!, 'rotation', [
       key(0, [0, 0, 168], 'easeOut'),
@@ -105,6 +116,7 @@ function atelierScene(): StudioScene {
     track(mainCam.id, 'fov', [key(0, [42]), key(96, [32])]),
     track(wheel.id, 'rotation', [key(0, [0, 0, 0], 'linear'), key(96, [0, 360, 0], 'linear')]),
   ];
+  clip.audio = [{ id: 'atelier-audio', assetId: 'lib-audio-atelier', start: 0, volume: 0.7, muted: false }];
 
   return {
     id: 'scene-atelier',
@@ -168,7 +180,14 @@ function brindilleScene(): StudioScene {
 
   const clip = makeClip('Salut', 72, 24);
   clip.id = 'brindille-clip';
+  const feetL = makeIkTarget('IK_Pied_G', [0.16, 0.05, 0], rig.bones.shinL!, -1, 'brindille-ik-foot-l');
+  attach(nodes, feetL, rig.skeletonId);
+  const feetR = makeIkTarget('IK_Pied_D', [-0.16, 0.05, 0], rig.bones.shinR!, 1, 'brindille-ik-foot-r');
+  attach(nodes, feetR, rig.skeletonId);
+
   clip.tracks = [
+    track(rig.bones.hips!, 'position', [key(0, [0, 1.25, 0]), key(18, [0, 1.13, 0]), key(36, [0, 1.25, 0]), key(54, [0, 1.13, 0]), key(72, [0, 1.25, 0])]),
+    track(rig.bones.forearmL!, 'rotation', [key(0, [0, 0, 0]), key(16, [0, 0, -35]), key(28, [0, 0, -10]), key(40, [0, 0, -38]), key(52, [0, 0, -10]), key(72, [0, 0, 0])]),
     track(rig.bones.armL!, 'rotation', [
       key(0, [0, 0, -150], 'easeOut'),
       key(16, [0, 0, -30]),
@@ -189,6 +208,7 @@ function brindilleScene(): StudioScene {
     track(pebble.id, 'scale', [key(0, [1, 1, 1]), key(22, [1, 1, 1], 'easeOut'), key(25, [1.18, 0.8, 1], 'easeOut'), key(32, [1, 1, 1])]),
     track(cam.id, 'zoom', [key(0, [1]), key(72, [1.12])]),
   ];
+  clip.audio = [{ id: 'brindille-audio', assetId: 'lib-audio-fete', start: 0, volume: 0.6, muted: false }];
 
   return {
     id: 'scene-brindille',
@@ -224,6 +244,12 @@ export const LIBRARY_ASSETS: StudioAsset[] = [
   { id: 'lib-mat-gold', name: 'Or pâle', folder: 'materials', type: 'material', origin: 'library', color: '#fdcf7b' },
   { id: 'lib-mat-ivory', name: 'Ivoire', folder: 'materials', type: 'material', origin: 'library', color: '#f1d8bd' },
   { id: 'lib-mat-charcoal', name: 'Charbon', folder: 'materials', type: 'material', origin: 'library', color: '#2a1e14' },
+  { id: 'lib-audio-atelier', name: 'Ambiance atelier', folder: 'audio', type: 'audio', origin: 'library', synth: { kind: 'atelier', seconds: 8 }, description: 'Bourdon chaud et carillons (synthèse, 8 s).' },
+  { id: 'lib-audio-fete', name: 'Fête des lanternes', folder: 'audio', type: 'audio', origin: 'library', synth: { kind: 'fete', seconds: 6 }, description: 'Arpège pentatonique et pulsation (synthèse, 6 s).' },
+  { id: 'lib-audio-vent', name: 'Vent des dunes', folder: 'audio', type: 'audio', origin: 'library', synth: { kind: 'vent', seconds: 8 }, description: 'Souffle filtré (synthèse, 8 s).' },
+  { id: 'lib-audio-nuit', name: 'Nuit et grillons', folder: 'audio', type: 'audio', origin: 'library', synth: { kind: 'nuit', seconds: 8 }, description: 'Nappe douce et grillons (synthèse, 8 s).' },
+  { id: 'lib-audio-espace', name: 'Nappe spatiale', folder: 'audio', type: 'audio', origin: 'library', synth: { kind: 'espace', seconds: 8 }, description: 'Basse profonde et scintillements (synthèse, 8 s).' },
+  { id: 'lib-audio-mer', name: 'Ressac', folder: 'audio', type: 'audio', origin: 'library', synth: { kind: 'mer', seconds: 8 }, description: 'Vagues (synthèse, 8 s).' },
   { id: 'lib-anim-spin', name: 'Rotation 360°', folder: 'animations', type: 'animation', origin: 'library', preset: 'spin', description: 'Ajoute des keyframes de rotation (Y en 3D, Z en 2D) sur tout le clip.' },
   { id: 'lib-anim-bounce', name: 'Rebond', folder: 'animations', type: 'animation', origin: 'library', preset: 'bounce', description: 'Ajoute un rebond vertical (keyframes de position).' },
   { id: 'lib-anim-sway', name: 'Balancement', folder: 'animations', type: 'animation', origin: 'library', preset: 'sway', description: 'Ajoute un balancement (keyframes de rotation Z).' },
