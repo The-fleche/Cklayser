@@ -5,7 +5,6 @@
  *
  *  - useDismiss              ferme un menu/panneau au clic extérieur ou sur Échap.
  *  - useMediaQuery           suit une media query (false au rendu serveur).
- *  - usePrefersReducedMotion raccourci pour prefers-reduced-motion: reduce.
  */
 import { useEffect, useRef, useState, type RefObject } from 'react';
 
@@ -65,11 +64,6 @@ export function useMediaQuery(query: string): boolean {
   }, [query]);
 
   return matches;
-}
-
-/** true si l'utilisateur a demandé à réduire les animations. */
-export function usePrefersReducedMotion(): boolean {
-  return useMediaQuery('(prefers-reduced-motion: reduce)');
 }
 
 /** true si la cible d'un événement clavier est un champ de saisie. */

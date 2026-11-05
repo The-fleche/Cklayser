@@ -526,11 +526,3 @@ a.seriesPill:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .fandom,
-  .fandom:hover {
-    transition: none;
-    transform: none;
-  }
-}

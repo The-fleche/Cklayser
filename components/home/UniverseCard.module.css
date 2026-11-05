@@ -73,9 +73,3 @@
     inset 0 0 0 2px var(--focus-ring),
     inset 0 0 0 4px rgb(var(--color-bg-rgb) / 0.85);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .card:hover .image {
-    transform: none;
-  }
-}

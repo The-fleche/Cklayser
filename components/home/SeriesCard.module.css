@@ -184,17 +184,6 @@
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .card:hover {
-    transform: none;
-  }
-
-  .card:hover .image {
-    transform: none;
-  }
-}
-
 /* Icône avant la ligne meta (cadenas des exclusivités). */
 .metaIcon {
   display: inline-flex;

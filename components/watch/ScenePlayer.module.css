@@ -125,13 +125,6 @@
   min-height: 44px;
   padding: 4px 14px;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .fade {
-    transition: none;
-  }
-}
-
 @media (max-width: 767px) {
   .pov {
     min-height: 44px;

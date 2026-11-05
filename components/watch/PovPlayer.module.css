@@ -316,10 +316,3 @@
     align-items: center;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .bigPlay,
-  .bigPlay:hover {
-    transition: none;
-  }
-}

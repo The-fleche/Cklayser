@@ -442,11 +442,3 @@
   border-style: dashed;
   border-color: rgb(var(--color-gold-rgb) / 0.35);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .switchThumb,
-  .switch,
-  .toolButton {
-    transition: none;
-  }
-}

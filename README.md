@@ -95,7 +95,7 @@ La première diapositive joue automatiquement et en boucle un extrait du **derni
 - L'affiche `s1e2-extrait-poster.webp` est montrée pendant le chargement et quand l'utilisateur a réduit les animations.
 - La vidéo ne joue que sur la diapositive active et repart du début à chaque retour. La diapositive reste affichée 12 s, soit deux passages, au lieu de 7.
 - Sur desktop et tablette, elle est cadrée à droite de la colonne de texte avec un fondu à gauche. Sur mobile, elle occupe le format 4:5.
-- Le bouton pause reste visible sur cette diapositive, mobile compris (WCAG 2.2.2). Avec `prefers-reduced-motion`, la vidéo ne démarre pas.
+- Le bouton pause reste visible sur cette diapositive, mobile compris (WCAG 2.2.2).
 
 Fabriquer un extrait bouclable de 6 s, ici à partir de 2,5 s :
 
@@ -398,4 +398,4 @@ Dépendance ajoutée : `three` 0.186.0 (et `@types/three`). Les contrôles d'orb
 - Focus doré de 2 px partout, navigation clavier complète.
 - Motifs ARIA : combobox (recherche), menu button (compte), carrousel (APG), bouton de menu `aria-expanded` / `aria-controls` (sidebar).
 - Hero : bouton son (« Activer le son » / « Couper le son »). La vidéo démarre toujours muette, comme l'exigent les navigateurs pour la lecture automatique.
-- `inert` sur les slides masquées. Pastilles toujours doublées d'un texte accessible. `prefers-reduced-motion` respecté (pas d'autoplay). Aucun texte sous 12 px.
+- `inert` sur les slides masquées. Pastilles toujours doublées d'un texte accessible. Aucun texte sous 12 px.

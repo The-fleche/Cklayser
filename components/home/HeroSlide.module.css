@@ -219,15 +219,3 @@
     min-width: 0;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .image,
-  .active .image {
-    transform: none;
-    transition: none;
-  }
-
-  .video {
-    transition: none;
-  }
-}

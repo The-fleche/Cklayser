@@ -123,9 +123,3 @@
   box-shadow: none;
   transform: none;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .button:hover {
-    transform: none;
-  }
-}

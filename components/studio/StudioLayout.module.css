@@ -304,9 +304,3 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .splitter::after {
-    transition: none;
-  }
-}

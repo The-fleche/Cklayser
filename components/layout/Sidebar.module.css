@@ -123,13 +123,6 @@
   background-color: rgb(var(--color-overlay-rgb) / 0.55);
   cursor: default;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .sidebar {
-    transition: none;
-  }
-}
-
 /* Mobile : la navigation passe en bas de l'écran (MobileNav). */
 @media (max-width: 767px) {
   .sidebar {

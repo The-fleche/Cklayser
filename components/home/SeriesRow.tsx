@@ -20,7 +20,6 @@
  */
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { usePrefersReducedMotion } from '@/lib/hooks';
 import IconButton from '@/components/ui/IconButton';
 import SectionHeader from './SectionHeader';
 import styles from './SeriesRow.module.css';
@@ -37,7 +36,6 @@ export default function SeriesRow({ title, href, variant = 'series', children }:
   const titleId = `${baseId}-titre`;
   const railId = `${baseId}-rangee`;
   const railRef = useRef<HTMLUListElement>(null);
-  const reducedMotion = usePrefersReducedMotion();
   const [canPrevious, setCanPrevious] = useState(false);
   const [canNext, setCanNext] = useState(false);
 
@@ -60,7 +58,7 @@ export default function SeriesRow({ title, href, variant = 'series', children }:
   const scrollByPage = (direction: 1 | -1) => {
     const rail = railRef.current;
     if (!rail) return;
-    rail.scrollBy({ left: direction * rail.clientWidth * 0.9, behavior: reducedMotion ? 'auto' : 'smooth' });
+    rail.scrollBy({ left: direction * rail.clientWidth * 0.9, behavior: 'smooth' });
   };
 
   return (

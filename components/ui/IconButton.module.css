@@ -100,9 +100,3 @@
   background-color: var(--color-indicator);
   box-shadow: 0 0 0 2px var(--color-bg-header);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .iconButton:active {
-    transform: none;
-  }
-}

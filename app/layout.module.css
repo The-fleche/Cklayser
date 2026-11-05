@@ -29,13 +29,6 @@
   margin-left: var(--sidebar-width);
   transition: margin-left var(--duration-base) var(--ease-out);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .column {
-    transition: none;
-  }
-}
-
 .main {
   position: relative;
   min-width: 0;

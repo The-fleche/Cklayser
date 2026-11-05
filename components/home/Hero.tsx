@@ -26,14 +26,12 @@
  *    une diapositive vidéo : WCAG 2.2.2) ;
  *  - clavier : flèches gauche et droite quand le focus est dans le carrousel ;
  *  - balayage tactile (seuil 50 px) ;
- *  - aucun défilement automatique si prefers-reduced-motion est actif ;
  *  - pause quand l'onglet est masqué.
  */
 import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type TouchEvent } from 'react';
 import { heroSlides } from '@/data/mock';
 import { getLatestEpisode, getSeries } from '@/lib/catalog';
-import { usePrefersReducedMotion } from '@/lib/hooks';
 import type { HeroSlide as HeroSlideData, Series } from '@/lib/types';
 import IconButton from '@/components/ui/IconButton';
 import HeroSlide from './HeroSlide';
@@ -74,18 +72,17 @@ export default function Hero() {
   const [userPaused, setUserPaused] = useState(false);
   const [pageHidden, setPageHidden] = useState(false);
   const [muted, setMuted] = useState(true);
-  const reducedMotion = usePrefersReducedMotion();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const rootRef = useRef<HTMLElement>(null);
 
-  const autoplay = total > 1 && !reducedMotion && !userPaused && !hovered && !keyboardFocus && !pageHidden;
+  const autoplay = total > 1 && !userPaused && !hovered && !keyboardFocus && !pageHidden;
 
   const goTo = useCallback((next: number) => setIndex(((next % total) + total) % total), [total]);
   const next = useCallback(() => goTo(index + 1), [goTo, index]);
   const previous = useCallback(() => goTo(index - 1), [goTo, index]);
 
   const currentHasVideo = Boolean(slides[index]?.slide.video);
-  const videoPlaying = !reducedMotion && !userPaused && !pageHidden;
+  const videoPlaying = !userPaused && !pageHidden;
 
   // Minuterie relancée à chaque changement de diapositive (7 s pleines,
   // 12 s pour une vidéo, qui boucle pendant ce temps).
@@ -174,7 +171,7 @@ export default function Hero() {
         ))}
       </div>
 
-      {currentHasVideo && !reducedMotion ? (
+      {currentHasVideo ? (
         <IconButton
           label={muted ? 'Activer le son' : 'Couper le son'}
           variant="dark"
@@ -216,7 +213,7 @@ export default function Hero() {
               }
               variant="dark"
               size={40}
-              className={currentHasVideo && !reducedMotion ? undefined : styles.pauseHidden}
+              className={currentHasVideo ? undefined : styles.pauseHidden}
               onClick={() => setUserPaused((value) => !value)}
             >
               {userPaused ? <Play size={16} strokeWidth={2} fill="currentColor" /> : <Pause size={16} strokeWidth={2} fill="currentColor" />}
