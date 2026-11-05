@@ -72,13 +72,13 @@ export default function Topbar() {
         >
           <Menu size={24} strokeWidth={2} aria-hidden="true" />
         </button>
-        {/* Logo fourni, fond rendu transparent et marges vides retirées (1558 × 581). */}
+        {/* Logo final, fond transparent, marges vides retirées (1420 × 535). */}
         <Link href="/" className={styles.logoLink} aria-label="CKlayser, retour à l’accueil">
           <Image
             src="/brand/logo.png"
             alt="CKlayser"
-            width={1558}
-            height={581}
+            width={1420}
+            height={535}
             sizes="(max-width: 767px) 104px, 150px"
             preload
             className={styles.logo}

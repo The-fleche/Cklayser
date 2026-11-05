@@ -100,7 +100,7 @@ export default function StudioToolbar({ fullscreen, onToggleFullscreen, onOpenHe
       {/* ----- Gauche ----- */}
       <div className={styles.left}>
         <Link href="/" className={styles.brand} aria-label="CKlayser — retour à l’accueil" data-tip="Retour à CKlayser">
-          <Image src="/brand/logo.png" alt="" width={1558} height={581} sizes="96px" className={styles.logo} />
+          <Image src="/brand/logo.png" alt="" width={1420} height={535} sizes="96px" className={styles.logo} />
           <span className={styles.brandStudio}>Studio</span>
         </Link>
 
