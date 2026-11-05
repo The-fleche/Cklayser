@@ -72,14 +72,14 @@ export default function Topbar() {
         >
           <Menu size={24} strokeWidth={2} aria-hidden="true" />
         </button>
-        {/* Logo original, ratio d'origine (1774 × 887), sans retouche. */}
+        {/* Logo fourni, fond rendu transparent et marges vides retirées (1558 × 581). */}
         <Link href="/" className={styles.logoLink} aria-label="CKlayser, retour à l’accueil">
           <Image
             src="/brand/logo.png"
             alt="CKlayser"
-            width={1774}
-            height={887}
-            sizes="(max-width: 767px) 96px, 140px"
+            width={1558}
+            height={581}
+            sizes="(max-width: 767px) 104px, 150px"
             preload
             className={styles.logo}
           />

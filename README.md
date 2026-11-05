@@ -69,7 +69,7 @@ lib/                      types.ts, catalog.ts (requêtes + formatage), app-stat
                           profile.ts (validation, photo), forum.ts + forum-store.ts (forums),
                           sidebar.ts (cookie), hooks.ts, theme.ts
 public/
-  brand/logo.png          logo original (conversion PNG sans perte du fichier fourni)
+  brand/logo.png          logo fourni, fond rendu transparent, marges vides retirées (1558 × 581)
   watch/echos-aelith/     épisode 1 : s1e1-pov1..3.mp4 ; épisode 2 : s1e2.mp4 ;
                           extrait du hero : s1e2-extrait.mp4 (+ affiches -poster.webp)
   hero/ series/ universes/ avatars/   visuels SVG de remplacement

@@ -50,10 +50,10 @@
   border-radius: 8px;
 }
 
-/* Logo original à 140 px de large (ratio d'origine conservé). */
+/* Logo à fond transparent, 150 px de large (ratio conservé). */
 .logo {
   display: block;
-  width: 140px;
+  width: 150px;
   height: auto;
 }
 
@@ -94,7 +94,7 @@
   }
 
   .logo {
-    width: 120px;
+    width: 128px;
   }
 }
 
@@ -121,9 +121,9 @@
     display: none;
   }
 
-  /* Logo original à 96 px de large (ratio d'origine conservé). */
+  /* Logo à 104 px de large (ratio conservé). */
   .logo {
-    width: 96px;
+    width: 104px;
   }
 
   .actions .mobileSearchButton {
