@@ -20,6 +20,7 @@ import AuthDialog from '@/components/layout/AuthDialog';
 import DevStateToggle from '@/components/layout/DevStateToggle';
 import MobileNav from '@/components/layout/MobileNav';
 import Sidebar from '@/components/layout/Sidebar';
+import { SiteChrome, SiteColumn } from '@/components/layout/SiteFrame';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import Topbar from '@/components/layout/Topbar';
 import Toast from '@/components/ui/Toast';
@@ -83,18 +84,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <a href="#contenu" className="skip-link">
             Aller au contenu
           </a>
-          <SidebarProvider initialCollapsed={sidebarCollapsed}>
-            {/* Header pleine largeur (bouton menu + logo), puis sidebar
-                dessous, comme YouTube. */}
-            <Topbar />
-            <Sidebar />
-          </SidebarProvider>
-          <div className={styles.column}>
+          {/* Sur /studio (≥ 768 px), l'éditeur occupe toute la fenêtre :
+              le squelette du site est masqué (SiteFrame). */}
+          <SiteChrome>
+            <SidebarProvider initialCollapsed={sidebarCollapsed}>
+              {/* Header pleine largeur (bouton menu + logo), puis sidebar
+                  dessous, comme YouTube. */}
+              <Topbar />
+              <Sidebar />
+            </SidebarProvider>
+          </SiteChrome>
+          <SiteColumn>
             <main id="contenu" tabIndex={-1} className={styles.main}>
               {children}
             </main>
-          </div>
-          <MobileNav />
+          </SiteColumn>
+          <SiteChrome>
+            <MobileNav />
+          </SiteChrome>
           <AuthDialog />
           <Toast />
           {process.env.NODE_ENV === 'development' ? <DevStateToggle /> : null}

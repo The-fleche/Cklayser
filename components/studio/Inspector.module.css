@@ -1,0 +1,363 @@
+.inspector {
+  display: grid;
+  align-content: start;
+}
+
+.empty {
+  display: grid;
+  gap: 8px;
+  padding: 18px 16px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+
+.emptyTitle {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.linkButton,
+.inlineLink {
+  color: var(--color-link);
+  font-weight: 600;
+  text-align: left;
+}
+
+.linkButton:hover,
+.inlineLink:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid var(--studio-border-soft);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.identityIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background-color: var(--studio-surface);
+  color: var(--color-gold);
+}
+
+.identityText {
+  flex: 1;
+  min-width: 0;
+}
+
+.identityType {
+  color: var(--color-gold);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.identityName {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: var(--text-base);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityActions {
+  display: flex;
+  gap: 2px;
+}
+
+.flag {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: var(--color-icon-muted);
+}
+
+.flag:hover {
+  background-color: var(--studio-surface-hover);
+  color: var(--color-text);
+}
+
+.flag[aria-pressed='true'] {
+  color: var(--color-gold);
+}
+
+/* ----- Vecteurs ---------------------------------------------------------- */
+.vectorRow {
+  display: grid;
+  gap: 4px;
+}
+
+.vectorLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-soft);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.vectorFields {
+  display: grid;
+  gap: 4px;
+}
+
+.triple {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pair > div {
+  min-width: 0;
+}
+
+/* Une ligne « libellé + sélecteur » dans une paire : libellé au-dessus. */
+.pair > div[class*='row'] {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+.inlineField {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  align-items: center;
+  gap: 8px;
+}
+
+.inlineLabel {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+/* ----- Losange de keyframe ----------------------------------------------- */
+.keyButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+}
+
+.keyButton:hover {
+  background-color: var(--studio-surface-hover);
+  color: var(--studio-key);
+}
+
+.keyButton[data-state='animated'] {
+  color: var(--studio-key);
+}
+
+.keyButton[data-state='key'] {
+  color: var(--studio-key);
+}
+
+.keyButton[data-state='key'] svg {
+  fill: var(--studio-key);
+  filter: drop-shadow(0 0 3px rgb(var(--color-gold-rgb) / 0.7));
+}
+
+.keyButton[data-state='override'] {
+  color: var(--studio-override);
+}
+
+.keyButton[data-state='override'] svg {
+  fill: var(--studio-override);
+}
+
+.locked {
+  color: var(--color-gold);
+  font-size: var(--text-xs);
+}
+
+/* ----- Divers ------------------------------------------------------------ */
+.cameraActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px 2px;
+}
+
+.sectionBody .cameraActions,
+section .cameraActions {
+  padding: 4px 0 0;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background-color: var(--studio-surface);
+  color: var(--color-text-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.actionButton:hover:not(:disabled) {
+  border-color: rgb(var(--color-gold-rgb) / 0.4);
+  color: var(--color-text);
+}
+
+.actionButton[aria-pressed='true'] {
+  border-color: transparent;
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+}
+
+.actionButton:disabled {
+  cursor: default;
+}
+
+.miniAction {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--color-icon-muted);
+}
+
+.miniAction:hover:not(:disabled) {
+  background-color: var(--studio-surface-hover);
+  color: var(--color-text);
+}
+
+.miniAction:disabled {
+  opacity: 0.35;
+}
+
+.facts {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.facts > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--color-text-soft);
+}
+
+.boneTree,
+.trackList {
+  display: grid;
+  gap: 1px;
+}
+
+.boneLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 5px;
+  color: var(--color-text-body);
+  font-size: var(--text-xs);
+  text-align: left;
+}
+
+.boneLink svg {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.boneLink:hover {
+  background-color: var(--studio-row-hover);
+}
+
+.boneMeta {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.derived {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.subheading {
+  margin-top: 4px;
+  color: var(--color-text-label);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.povList {
+  display: grid;
+  gap: 3px;
+}
+
+.pov {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 4px 0 6px;
+  border: 1px solid var(--studio-border-soft);
+  border-radius: 6px;
+  background-color: var(--studio-surface);
+  font-size: var(--text-xs);
+}
+
+.povIndex {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+  font-weight: 700;
+}
+
+.povActions {
+  display: flex;
+  margin-left: auto;
+}
+
+.pov .boneMeta {
+  margin-left: 0;
+}

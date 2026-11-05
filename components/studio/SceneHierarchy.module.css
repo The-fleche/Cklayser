@@ -1,0 +1,242 @@
+.body {
+  display: flex;
+  flex-direction: column;
+}
+
+.addButton {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+}
+
+.addButton:hover,
+.addButton[aria-expanded='true'] {
+  background-color: var(--color-action-hover);
+}
+
+.filter {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  background-color: var(--studio-panel);
+}
+
+.filterIcon {
+  position: absolute;
+  left: 16px;
+  color: var(--color-text-muted);
+}
+
+.filterInput {
+  width: 100%;
+  height: 26px;
+  padding: 0 8px 0 26px;
+  border: 1px solid var(--studio-border-soft);
+  border-radius: 6px;
+  background-color: var(--studio-bg);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+}
+
+.filterInput::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.filterInput:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+.tree {
+  flex: 1;
+  padding: 0 4px 8px;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding-right: 4px;
+  border-radius: 5px;
+  color: var(--color-text-body);
+  font-size: var(--text-sm);
+  cursor: default;
+  user-select: none;
+}
+
+.row:hover {
+  background-color: var(--studio-row-hover);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.selected,
+.selected:hover {
+  background-color: var(--studio-row-selected);
+  color: var(--color-text);
+}
+
+.selected::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background-color: var(--color-gold);
+}
+
+.hidden .name,
+.hidden .icon {
+  opacity: 0.45;
+}
+
+/* Indicateurs de dépôt (glisser-déposer). */
+.row[data-drop='inside'] {
+  background-color: var(--studio-row-drop);
+  box-shadow: inset 0 0 0 1px var(--color-gold);
+}
+
+.row[data-drop='before']::after,
+.row[data-drop='after']::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  left: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background-color: var(--color-gold);
+}
+
+.row[data-drop='before']::after {
+  top: -1px;
+}
+
+.row[data-drop='after']::after {
+  bottom: -1px;
+}
+
+.chevron {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  color: var(--color-icon-muted);
+}
+
+.chevron:hover {
+  background-color: var(--studio-surface-hover);
+}
+
+.icon {
+  flex: none;
+  color: var(--color-text-soft);
+}
+
+/* Couleur d'icône par famille de composants. */
+.row[data-family='camera'] .icon {
+  color: var(--color-clay);
+}
+
+.row[data-family='skeleton'] .icon {
+  color: var(--color-gold);
+}
+
+.row[data-family='animation'] .icon {
+  color: var(--color-keyframe-line);
+}
+
+.row[data-family='light'] .icon {
+  color: var(--color-gold);
+}
+
+.row[data-family='physical'] .icon {
+  color: var(--studio-axis-z);
+}
+
+.name {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mainStar {
+  flex: none;
+  color: var(--color-clay);
+}
+
+.renameInput {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  border: 1px solid var(--focus-ring);
+  border-radius: 4px;
+  background-color: var(--studio-bg);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  gap: 1px;
+}
+
+.action {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  color: var(--color-icon-muted);
+  opacity: 0;
+}
+
+.row:hover .action,
+.row:focus-within .action,
+.selected .action,
+.actionOn {
+  opacity: 1;
+}
+
+.action:hover {
+  background-color: var(--studio-surface-hover);
+  color: var(--color-text);
+}
+
+.actionOn {
+  color: var(--color-gold);
+}
+
+.empty {
+  padding: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}

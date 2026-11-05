@@ -1,0 +1,627 @@
+/* ==========================================================================
+   Timeline — pistes, règle, losanges, tête de lecture, courbes.
+   ========================================================================== */
+.panel {
+  min-height: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.headerTools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+}
+
+.clipName {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--color-text-soft);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clipSelect select,
+.speed select,
+.interpSelect select {
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--studio-border);
+  border-radius: 6px;
+  background-color: var(--studio-surface);
+  color: var(--color-text);
+  font-size: var(--text-xs);
+}
+
+.clipSelect select:focus-visible,
+.speed select:focus-visible,
+.interpSelect select:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -1px;
+}
+
+.interpSelect select:disabled {
+  opacity: 0.45;
+}
+
+/* ----- Barre de contrôle ------------------------------------------------- */
+.controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 5px 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--studio-border-soft);
+  scrollbar-width: none;
+}
+
+.transport,
+.transportButtons,
+.keyTools,
+.viewTools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.transport {
+  gap: 8px;
+}
+
+.playButton {
+  border-radius: 50%;
+}
+
+.timecode {
+  display: grid;
+  min-width: 82px;
+  padding: 2px 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background-color: var(--studio-bg);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.timecodeMain {
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.timecodeFrames {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.frameNumber {
+  color: var(--color-gold);
+}
+
+.sep {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  background-color: var(--studio-border);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.durationField {
+  width: 86px;
+}
+
+/* ----- Zone principale --------------------------------------------------- */
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.scroll {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  background-color: var(--studio-track);
+}
+
+.grid {
+  display: flex;
+  min-width: max-content;
+  min-height: 100%;
+}
+
+.names {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  flex: none;
+  width: 196px;
+  border-right: 1px solid var(--studio-border);
+  background-color: var(--studio-panel);
+}
+
+.corner {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--studio-border);
+  background-color: var(--studio-panel-header);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px 0 24px;
+  border-bottom: 1px solid var(--studio-border-soft);
+  color: var(--color-text-soft);
+  font-size: var(--text-xs);
+}
+
+.nameGroup {
+  padding-left: 4px;
+  background-color: var(--studio-panel-header);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.nameSelected {
+  box-shadow: inset 2px 0 0 var(--color-gold);
+}
+
+.nameToggle {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  color: var(--color-icon-muted);
+}
+
+.nameToggle:hover {
+  background-color: var(--studio-surface-hover);
+}
+
+.nameLabel {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.nameLabel svg {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.nameLabel span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameLabel:hover {
+  background-color: var(--studio-surface-hover);
+}
+
+.propertyLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emptyName {
+  height: 60px;
+}
+
+.tracksColumn {
+  position: relative;
+  flex: none;
+}
+
+.rulerWrap {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--studio-panel-header);
+}
+
+/* ----- Règle ------------------------------------------------------------- */
+.ruler {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-bottom: 1px solid var(--studio-border);
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.ruler:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.tick,
+.tickMinor,
+.second {
+  position: absolute;
+  bottom: 0;
+}
+
+.tick {
+  height: 12px;
+  border-left: 1px solid var(--color-text-muted);
+}
+
+.tickMinor {
+  height: 5px;
+  border-left: 1px solid var(--studio-border);
+}
+
+.tickLabel {
+  position: absolute;
+  white-space: nowrap;
+  bottom: 12px;
+  left: 3px;
+  color: var(--color-text-soft);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.second {
+  top: 0;
+  height: 100%;
+  border-left: 1px solid rgb(var(--color-gold-rgb) / 0.35);
+}
+
+.tickSeconds {
+  margin-left: 4px;
+  color: var(--color-gold);
+  font-size: 0.625rem;
+}
+
+.rulerEnd {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--color-clay);
+}
+
+/* ----- Pistes ------------------------------------------------------------ */
+.tracks {
+  position: relative;
+  min-height: calc(100% - 30px);
+  padding-bottom: 12px;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.trackRow {
+  position: relative;
+  height: 24px;
+  border-bottom: 1px solid var(--studio-border-soft);
+}
+
+.trackGroup {
+  background-color: rgb(var(--color-overlay-rgb) / 0.25);
+}
+
+.trackAlt {
+  background-color: var(--studio-track-alt);
+}
+
+.trackGroup.trackAlt {
+  background-color: rgb(var(--color-overlay-rgb) / 0.3);
+}
+
+.trackSelected {
+  background-color: rgb(146 67 35 / 0.12);
+}
+
+/* Segment entre deux keyframes (indique la présence d'une interpolation). */
+.segment {
+  position: absolute;
+  top: 11px;
+  height: 2px;
+  background-color: var(--studio-key-animated);
+  pointer-events: none;
+}
+
+.segment[data-interp='constant'] {
+  height: 0;
+  border-top: 2px dotted var(--studio-key-animated);
+  background: none;
+}
+
+.endZone {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(var(--color-overlay-rgb) / 0.35);
+  pointer-events: none;
+}
+
+.emptyTracks {
+  position: sticky;
+  left: 0;
+  max-width: 520px;
+  padding: 16px 18px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+/* ----- Losanges ---------------------------------------------------------- */
+.key {
+  position: absolute;
+  top: 6px;
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  border: 1px solid rgb(var(--color-overlay-rgb) / 0.9);
+  border-radius: 1px;
+  background-color: var(--studio-key);
+  box-shadow: 0 0 6px rgb(var(--color-gold-rgb) / 0.35);
+  cursor: grab;
+  transform: rotate(45deg);
+  touch-action: none;
+}
+
+.key:hover {
+  background-color: var(--color-gold);
+}
+
+.key:active {
+  cursor: grabbing;
+}
+
+.key[aria-pressed='true'] {
+  border-color: var(--studio-key-selected);
+  background-color: var(--studio-key-selected);
+  box-shadow:
+    0 0 0 2px var(--studio-playhead),
+    0 0 10px rgb(var(--color-gold-rgb) / 0.8);
+}
+
+.key:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Forme de l'interpolation sortante : constante = carré, linéaire = losange plein. */
+.key[data-interp='constant'] {
+  border-radius: 0;
+  transform: none;
+  width: 10px;
+  height: 10px;
+  top: 7px;
+  margin-left: -5px;
+}
+
+.key[data-interp='easeIn'],
+.key[data-interp='easeOut'],
+.key[data-interp='easeInOut'],
+.key[data-interp='bezier'] {
+  border-radius: 3px;
+}
+
+.keySummary {
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  background-color: rgb(237 187 103 / 0.7);
+  box-shadow: none;
+}
+
+/* ----- Tête de lecture --------------------------------------------------- */
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 0;
+  border-left: 2px solid var(--studio-playhead);
+  margin-left: -1px;
+  pointer-events: none;
+}
+
+.playheadHead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.playheadHead span {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  min-width: 26px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background-color: var(--studio-playhead);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.playheadHead::after {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: -1px;
+  height: 12px;
+  border-left: 2px solid var(--studio-playhead);
+}
+
+.marquee {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid var(--color-gold);
+  background-color: rgb(var(--color-gold-rgb) / 0.12);
+  pointer-events: none;
+}
+
+/* ----- Éditeur d'interpolation ------------------------------------------ */
+.interp {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+  width: 226px;
+  padding: 10px 12px;
+  overflow: auto;
+  border-left: 1px solid var(--studio-border);
+  background-color: var(--studio-panel);
+}
+
+.interpTitle {
+  overflow: hidden;
+  color: var(--color-text-label);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.interpEmpty {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.interpTypes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.interpType {
+  height: 24px;
+  border: 1px solid var(--studio-border);
+  border-radius: 5px;
+  color: var(--color-text-soft);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.interpType:hover {
+  border-color: rgb(var(--color-gold-rgb) / 0.4);
+  color: var(--color-text);
+}
+
+.interpType[aria-checked='true'] {
+  border-color: transparent;
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+}
+
+.curve {
+  flex: none;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 196 / 120;
+  border-radius: 8px;
+  background-color: var(--studio-bg);
+  touch-action: none;
+}
+
+.curveFrame {
+  fill: none;
+  stroke: var(--studio-border);
+  stroke-dasharray: 3 3;
+}
+
+.curveDiagonal {
+  stroke: var(--studio-border);
+}
+
+.curveLine {
+  fill: none;
+  stroke: var(--studio-key);
+  stroke-width: 2;
+}
+
+.curveKey {
+  fill: var(--studio-key);
+}
+
+.handleLine {
+  stroke: var(--color-clay);
+  stroke-width: 1;
+}
+
+.handle {
+  fill: var(--color-clay);
+  stroke: var(--studio-key-selected);
+  stroke-width: 1.5;
+  cursor: grab;
+}
+
+.handle:focus-visible {
+  outline: none;
+  stroke: var(--focus-ring);
+  stroke-width: 3;
+}
+
+.interpRange {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.keyFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+@media (max-width: 1279px) {
+  .interp {
+    width: 190px;
+  }
+
+  .names {
+    width: 160px;
+  }
+}

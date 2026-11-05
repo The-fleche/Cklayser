@@ -40,7 +40,7 @@ app/
   layout.tsx              polices, état partagé, sidebar + header + navigation mobile
   globals.css             design system (variables), reset, utilitaires a11y
   page.tsx                accueil : hero + rangées
-  studio/page.tsx         « Bientôt disponible » (CKlayser Studio)
+  studio/page.tsx         CKlayser Studio : éditeur d'animation plein écran (voir plus bas)
   serie/[id]/page.tsx     page de visionnage (lecteur à points de vue) ou « Bientôt disponible »
   decouvrir/page.tsx      catalogue complet filtrable (?univers=…)
   exclusives/page.tsx     séries réservées aux adhérents, épisodes en avance
@@ -63,11 +63,13 @@ components/
   catalog/                CatalogBrowser, ExclusivesView, ChannelsView, ChannelView, ChannelActions
   forum/                  ForumHome, ThreadView, ForumAuthorLine, LikeButton
   ui/                     Button, IconButton, Badge, Avatar, KeyframeDiamond, ComingSoon, Toast
+  studio/                 CKlayser Studio (voir « CKlayser Studio » plus bas)
 data/mock.ts              séries (16), univers, chaînes, adhésions, utilisateur, notifications, slides, épisodes
 data/forum.ts             membres fictifs, communautés, discussions et réponses
 lib/                      types.ts, catalog.ts (requêtes + formatage), app-state.tsx (contexte),
                           profile.ts (validation, photo), forum.ts + forum-store.ts (forums),
                           sidebar.ts (cookie), hooks.ts, theme.ts
+lib/studio/               modèle de données, animation, store et moteur de rendu du Studio
 public/
   brand/logo.png          logo fourni, fond rendu transparent, marges vides retirées (1558 × 581)
   watch/echos-aelith/     épisode 1 : s1e1-pov1..3.mp4 ; épisode 2 : s1e2.mp4 ;
@@ -183,6 +185,136 @@ Le bouton menu fonctionne ainsi :
 - `/fandoms/[id]` : message, réponses (avec un liseré doré pour l'équipe), « j'aime » sur chaque message, formulaire de réponse et suppression de ses propres sujets.
 - Les contributions du membre (sujets, réponses, « j'aime ») sont gardées dans le navigateur (`cklayser:forum`). Les données fictives sont dans `data/forum.ts`. Les anciennetés y sont stockées en minutes, ce qui donne un affichage relatif identique côté serveur et côté navigateur.
 - En visiteur, publier, répondre ou aimer ouvre la création de compte.
+
+## CKlayser Studio (`/studio`)
+
+L'éditeur d'animation de la plateforme, dans le même projet Next.js. Sur tablette et desktop, il occupe toute la fenêtre : `components/layout/SiteFrame.tsx` masque le header, la sidebar et la navigation mobile du site sur cette route. Le logo de la barre du Studio ramène à l'accueil. Sur mobile (< 768 px), un message indique que la création complète demande un écran plus grand ; le créateur garde la consultation de ses projets : scènes, aperçu par la caméra principale, lecture du clip et liste des composants.
+
+### Disposition
+
+```
+┌──────────────────────── StudioToolbar ─────────────────────────┐
+│ SceneHierarchy │ ViewportToolbar                │ Properties-   │
+│                │ SceneViewport (three.js)       │ Inspector     │
+│────────────────│────────────────────────────────│               │
+│ AssetBrowser   │ AnimationTimeline              │               │
+│                │  PlaybackControls · TimelineRuler · pistes     │
+│                │  AnimationTrack · Keyframe · InterpolationEditor│
+└──────────────────────── barre d'état ──────────────────────────┘
+```
+
+- **Panneaux** : séparateurs déplaçables (souris, ou flèches du clavier) et panneaux réductibles. La disposition est mémorisée dans le navigateur (`cklayser:studio:disposition`). Le bouton plein écran utilise la Fullscreen API.
+- **Tablette** (< 1280 px) : la hiérarchie est repliée en bande et les assets aussi. Grille, squelettes et aimantation passent dans le menu Réglages.
+
+### Architecture : un seul état pour les cinq zones
+
+```
+lib/studio/types.ts        modèle sérialisable : projet → scènes → nœuds, clips, pistes, keyframes,
+                           caméras du spectateur, assets
+lib/studio/animation.ts    interpolations (linéaire, Bézier, constante, ease in/out/in-out),
+                           échantillonnage des pistes, évaluation d'une scène à une image donnée
+lib/studio/store.ts        store central (useSyncExternalStore) : sélection, temps, lecture,
+                           outil, mode de vue, annuler / rétablir (100 niveaux, gestes groupés),
+                           règle de keyframing, sauvegarde locale, import / export JSON
+lib/studio/factory.ts      fabrique de composants, personnages rigués, clips
+lib/studio/demo.ts         projet de démonstration et bibliothèque d'assets
+lib/studio/import.ts       import de fichiers (images, .glb, sons)
+lib/studio/engine/         SceneRenderer (three.js) et TransformGizmo : moteur de rendu SANS React,
+                           qui lit l'état et renvoie des événements au store
+components/studio/         StudioApp, StudioLayout, StudioToolbar, SceneHierarchy, AssetBrowser,
+                           SceneViewport, ViewportToolbar, PropertiesInspector, ObjectProperties,
+                           CameraProperties, SkeletonProperties, AnimationProperties, SceneProperties,
+                           AnimationTimeline, TimelineRuler, AnimationTrack, Keyframe,
+                           PlaybackControls, InterpolationEditor, MobileStudio, Panel, Splitter…
+```
+
+Hiérarchie, inspecteur, viewport, timeline et assets lisent et modifient **les mêmes données**. Une modification faite au gizmo met à jour l'inspecteur, et inversement. La tête de lecture fait évaluer la scène, ce que reflètent le viewport et l'inspecteur. Le projet est du JSON pur : c'est ce que le lecteur public pourra recevoir pour reconstruire la scène.
+
+Conventions : transformations locales, rotations en degrés dans l'ordre d'Euler YXZ (celui de Godot), temps en images (la cadence est portée par le clip).
+
+### Ce qui fonctionne
+
+- **Scènes 3D et 2D**. La démo contient deux scènes :
+  - « L'atelier » (3D) : Aélith, rig de 7 bones ; un tour de potier qui tourne avec son vase ; deux caméras ; un clip de 4 s.
+  - « Brindille salue » (2D) : pantin 2D et un caillou qui rebondit.
+- **Hiérarchie** :
+  - sélection, dépliage, renommage (double-clic, F2) ;
+  - masquer (H), verrouiller (L), supprimer ;
+  - création de composants (objets, sprites, caméras, lumières, squelettes, bones, points de contrôle, AnimationPlayer) ;
+  - glisser-déposer pour réordonner ou ranger : avant / dedans / après, avec contrôle des cycles et règle des bones ;
+  - filtre par nom.
+- **Viewport** (three.js, WebGL temps réel) :
+  - grille, axes, indicateur d'orientation cliquable ;
+  - sélection au clic et cadrage de la sélection (F) ;
+  - outils sélection (Q), déplacement (W), rotation (E), échelle (R), points de contrôle / pose des bones (T) ;
+  - aimantation ;
+  - vue éditeur en perspective ou orthographique, vues de face, droite et dessus (1, 3, 7).
+  - En 2D : vue orthographique, pan et zoom.
+- **Caméras** : ce sont de vrais nœuds de la scène, animables (position, rotation, champ de vision ou zoom).
+  - Le corps et le cadre de chaque caméra s'affichent dans le viewport, avec en incrustation ce que filme la caméra sélectionnée.
+  - **Mode Caméra** : on voit par la caméra de scène et on la pilote (glisser : orienter ; Maj : déplacer ; molette : avancer ou zoomer).
+  - **Mode Aperçu** : rendu final sans gizmo ni aide d'édition.
+  - La caméra de navigation du viewport (caméra de création) n'est jamais un nœud de la scène.
+- **Caméras du spectateur** (propriétés de la racine) :
+  - caméra principale ;
+  - points de vue proposés, avec ordre et libellés ;
+  - transition entre points de vue (coupe, fondu, mouvement) ;
+  - caméra libre des scènes 3D : cible, distances et angles limites, visualisés dans le viewport.
+- **Inspecteur dynamique** selon le type de composant :
+  - objet, sprite, lumière, caméra (focale ↔ champ de vision), squelette, bone, point de contrôle, AnimationPlayer (clip), scène ;
+  - valeurs modifiables au clavier ou en glissant l'étiquette du champ.
+- **Timeline** :
+  - transport complet : début, keyframe précédente, image précédente, lecture / pause, image suivante, keyframe suivante, fin ;
+  - temps courant, vitesse, boucle ;
+  - règle en images et secondes, tête de lecture déplaçable ;
+  - pistes par composant et par propriété, dépliables ;
+  - keyframes : ajout (K, losange ◆, double-clic sur une piste), suppression, déplacement au glisser ou au clavier, sélection multiple (Maj / Ctrl, rectangle), copier / coller à la tête de lecture, navigation entre keyframes ;
+  - éditeur d'interpolation avec la courbe, et des poignées de Bézier déplaçables ;
+  - plusieurs clips par scène.
+- **Règle de keyframing** :
+  - Une propriété animée modifiée sans enregistrement automatique prend une valeur temporaire (champ orange) jusqu'au prochain changement d'image ; le losange l'enregistre.
+  - Avec l'enregistrement automatique (●), chaque modification crée ou met à jour la keyframe de l'image courante.
+- **Squelettes** :
+  - bones hiérarchiques ;
+  - corps lié au squelette : chaque partie suit son bone (skinning rigide), en 3D comme en 2D ;
+  - points de contrôle avec contrainte « Viser » : un bone s'oriente vers le point, avec une influence réglable.
+- **Assets** :
+  - dossiers, recherche, aperçu ;
+  - glisser vers le viewport ou la hiérarchie pour instancier un objet, ou pour appliquer un matériau ou un préréglage d'animation (rotation 360°, rebond, balancement) ;
+  - import par bouton ou par dépôt de fichiers : images (sprite ou plan texturé), modèles `.glb` (chargés par GLTFLoader), sons (prévisualisation).
+- **Fichiers** :
+  - annuler / rétablir ;
+  - enregistrement dans le navigateur (`cklayser:studio:projet`) avec indicateur ;
+  - export et ouverture d'un projet `.json` ;
+  - plusieurs scènes par projet (onglets).
+
+### À développer (non simulé)
+
+- Déformation pondérée des maillages (poids par sommet) et maillages 2D déformables. Aujourd'hui, le skinning est rigide.
+- Cinématique inverse (IK) et limites angulaires des bones.
+- Lecture des squelettes et animations contenus dans les fichiers glTF importés.
+- Pistes audio dans la timeline.
+- Sauvegarde en ligne et stockage des fichiers lourds. Les fichiers de plus de 1,5 Mo ne restent disponibles que pendant la session.
+- Lecteur public reconstruisant les scènes du Studio : le format de projet est prêt, le lecteur actuel lit encore des vidéos.
+
+### Raccourcis
+
+| Touche | Action |
+| --- | --- |
+| Espace | Lecture / pause |
+| ← / → (Maj : keyframe précédente / suivante) | Image précédente / suivante |
+| Q W E R T | Outils |
+| K ou I | Keyframes sur le composant sélectionné |
+| F | Cadrer la sélection |
+| 0 | Vue caméra |
+| P | Aperçu |
+| Suppr | Supprimer les keyframes sélectionnées, sinon le composant |
+| Ctrl + C / V | Copier / coller des keyframes |
+| Ctrl + Z / Maj + Ctrl + Z | Annuler / rétablir |
+| Ctrl + S | Enregistrer |
+| ? | Aide |
+
+Dépendance ajoutée : `three` 0.186.0 (et `@types/three`). Les contrôles d'orbite, le gizmo, l'indicateur d'axes et le chargeur glTF viennent de ses exemples officiels, sans autre bibliothèque. Les couleurs de l'éditeur (grille, axes, bones, sélection…) sont des variables CSS `--studio-*` de `app/globals.css`, lues par le moteur.
 
 ## Design system
 

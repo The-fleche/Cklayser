@@ -175,6 +175,48 @@
   --z-toast: 90;
   --z-dev: 100;          /* commutateur visiteur/membre (dev uniquement) */
 
+  /* ------------------------------------------------------------------------
+     13. CKLAYSER STUDIO — éditeur d'animation (/studio)
+     Même famille de bruns que le site, un cran plus sombre et plus dense.
+     ------------------------------------------------------------------------ */
+  --studio-bg: #140e09;               /* fond général, entre les panneaux */
+  --studio-panel: #1d150e;            /* panneaux (hiérarchie, inspecteur…) */
+  --studio-panel-header: #241a12;     /* en-têtes de panneaux, barre d'outils */
+  --studio-surface: #2a1e15;          /* champs, boutons au repos */
+  --studio-surface-hover: #35271c;    /* survol */
+  --studio-border: #3a2b1f;           /* séparateurs fins */
+  --studio-border-soft: #2a1f16;
+  --studio-edge-glow: rgb(var(--color-gold-rgb) / 0.07); /* délimitation légèrement lumineuse */
+  --studio-row-hover: #281d14;
+  --studio-row-selected: rgb(146 67 35 / 0.55);           /* couleur d'action, translucide */
+  --studio-row-drop: rgb(var(--color-gold-rgb) / 0.18);
+  --studio-track: #18110b;            /* fond des pistes de la timeline */
+  --studio-track-alt: #1c140d;
+  --studio-playhead: #e16330;
+  --studio-key: #edbb67;              /* losanges de keyframes */
+  --studio-key-selected: #fff3e7;
+  --studio-key-animated: rgb(237 187 103 / 0.35);
+  --studio-override: #e0774a;         /* valeur modifiée non enregistrée */
+  /* Viewport (lus par le moteur three.js) */
+  --studio-viewport-bg: #1d140e;
+  --studio-grid-major: #5a4636;
+  --studio-grid-minor: #30241a;
+  --studio-axis-x: #e0604a;
+  --studio-axis-y: #8fcf6a;
+  --studio-axis-z: #5f9be0;
+  --studio-bone: #fdcf7b;
+  --studio-bone-selected: #e16330;
+  --studio-selection: #fdcf7b;
+  --studio-camera: #ddd0c6;
+  --studio-camera-active: #e0774a;
+  --studio-light: #fdcf7b;
+  --studio-control: #e16330;
+  --studio-letterbox: #0f0a06;
+  --studio-toolbar-height: 46px;
+  --studio-statusbar-height: 26px;
+  --studio-panel-header-height: 34px;
+  --z-studio-tooltip: 95;
+
   color-scheme: dark;
 }
 

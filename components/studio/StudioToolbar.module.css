@@ -1,0 +1,276 @@
+.toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px;
+  background-color: var(--color-bg-header);
+  border-bottom: 1px solid var(--border-header);
+  box-shadow: inset 0 -1px 0 var(--studio-edge-glow);
+  margin-bottom: 6px;
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+.brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.brand:hover {
+  background-color: var(--studio-surface);
+}
+
+.logo {
+  width: 84px;
+  height: auto;
+}
+
+.brandStudio {
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.divider {
+  flex: none;
+  width: 1px;
+  height: 22px;
+  margin: 0 6px;
+  background-color: var(--studio-border);
+}
+
+.projectName,
+.nameInput {
+  min-width: 0;
+  max-width: 250px;
+  height: 30px;
+  padding: 0 8px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projectName:hover {
+  border-color: var(--studio-border);
+}
+
+.nameInput {
+  width: 230px;
+  border-color: var(--focus-ring);
+  background-color: var(--studio-surface);
+}
+
+.menus {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+/* ----- Centre ------------------------------------------------------------ */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.projectTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tabs {
+  display: flex;
+  flex: 0 1 auto;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 3px;
+  border: 1px solid var(--studio-border-soft);
+  border-radius: 10px;
+  background-color: var(--studio-panel);
+}
+
+.tab,
+.tabInput {
+  display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  max-width: 220px;
+  height: 28px;
+  padding: 0 11px 0 7px;
+  border-radius: 7px;
+  color: var(--color-text-soft);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background-color: var(--studio-surface-hover);
+  color: var(--color-text);
+}
+
+.tab[aria-selected='true'] {
+  background-color: var(--color-action);
+  color: var(--color-text-on-accent);
+}
+
+.tabInput {
+  width: 200px;
+  border: 1px solid var(--focus-ring);
+  background-color: var(--studio-surface);
+  color: var(--color-text);
+}
+
+.tabName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dimension {
+  padding: 0 5px;
+  border-radius: 4px;
+  background-color: rgb(var(--color-overlay-rgb) / 0.35);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.saveState {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.saveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--badge-3d-fg);
+}
+
+.saveDirty {
+  color: var(--color-gold);
+}
+
+.saveDirty .saveDot {
+  background-color: var(--color-indicator);
+}
+
+.iconMenu {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  color: var(--color-icon);
+}
+
+.iconMenu:hover,
+.iconMenu[aria-expanded='true'] {
+  background-color: var(--studio-surface-hover);
+}
+
+.exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  margin-left: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  color: var(--color-text-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.exit:hover {
+  border-color: rgb(var(--color-gold-rgb) / 0.4);
+  background-color: var(--studio-surface);
+}
+
+.exitIcon {
+  transform: rotate(-90deg);
+}
+
+@media (max-width: 1599px) {
+  .projectTab {
+    display: none;
+  }
+}
+
+@media (max-width: 1439px) {
+  .exit {
+    display: none;
+  }
+
+  .projectName {
+    max-width: 190px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .saveState {
+    font-size: 0;
+    gap: 0;
+  }
+
+  .tab,
+  .tabInput {
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .projectName {
+    display: none;
+  }
+
+  .divider:first-of-type {
+    display: none;
+  }
+}

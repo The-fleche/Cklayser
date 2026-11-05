@@ -1,3 +1,26 @@
+/* Squelette du site (header, sidebar, navigation mobile) : transparent
+   pour la mise en page. */
+.chrome,
+.chromeStudio {
+  display: contents;
+}
+
+/* /studio : l'éditeur occupe toute la fenêtre sur tablette et desktop. */
+@media (min-width: 768px) {
+  .chromeStudio {
+    display: none;
+  }
+
+  .column.columnStudio {
+    min-height: 0;
+    margin-left: 0;
+  }
+
+  .columnStudio .main {
+    padding-bottom: 0;
+  }
+}
+
 /* Colonne principale : décalée de la largeur de la sidebar fixe. */
 .column {
   min-width: 0;
